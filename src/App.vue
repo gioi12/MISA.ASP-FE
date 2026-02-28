@@ -1,11 +1,41 @@
-<script setup></script>
+<script setup>
+import TheHeader from '@/layouts/TheHeader.vue'
+import TheSidebar from '@/layouts/TheSidebar.vue'
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div class="layout">
+    <div class="layout__header">
+      <TheHeader />
+    </div>
+    <div class="layout__body">
+      <div class="layout__menu">
+        <TheSidebar />
+      </div>
+      <div class="layout__content">
+        <router-view />
+      </div>
+    </div>
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.layout {
+  height: 100vh;
+}
+.layout__header {
+  height: var(--nav-bar-height);
+}
+.layout__body {
+  display: flex;
+  height: calc(100vh - 48px);
+}
+.layout__content {
+  flex: 1;
+  background-color: #eeeff1;
+  padding-left: 16px;
+}
+.layout__menu {
+  background-color: white;
+}
+</style>

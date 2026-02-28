@@ -1,0 +1,57 @@
+:root {
+  /* root */
+  --control-label-bottom-space: 4px;
+  --nav-bar-height: 48px;
+  --notify-header-height: 56px;
+  --primary-button-height: 34px;
+  --rounded-button-height: 32px;
+  --input-height: 32px;
+  --combobox-multi-item-height: 24px;
+  --combobox-dropdown-icon-width: 32px;
+  --combobox-quick-add-width: 30px;
+  --tab__router-height: 50px;
+  --tab__router-pading: 15px 20px;
+  --tab__detail-padding-y: 16px;
+  --grid-header-text-transform: uppercase;
+  --grid-header-height: 34px;
+  --grid-body-line-height: 44px;
+  --grid-summary-height: 34px;
+  --grid-footer-padding-y: 12px;
+  --popup-right__title-padding: 16px 16px 20px 16px;
+  --title-list-padding-top: 12px;
+  --title-list-padding-bottom: 24px;
+  --row-spacing: 12px;
+  --row-spacing--large: 16px;
+  --zone-padding: 20px;
+  --reference-padding-top: 12px;
+  --reference-padding-bottom: 16px;
+  --horizontal-control-padding-y: 16px;
+  --tab-router-margin-top: 14px;
+  --overview-number-size: 24px;
+  --overview-label-size: 14px;
+  --overview-height: 64px;
+  --footer-height: 50px;
+  /* icon  */
+  --icon--url: url('@/assets/images/icons.svg');
+
+  /* color */
+  --primary--color: #2ca01c;
+  --active--color: #85ff74;
+  --menu--icon--color: #6b6c72;
+  --default--color: #bababa;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-family: 'Noto Sans', 'Open Sans', sans-serif;
+  background: #eeeff1;
+  font-weight: 400;
+}

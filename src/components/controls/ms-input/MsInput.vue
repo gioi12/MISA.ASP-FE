@@ -1,7 +1,7 @@
 <template>
   <div class="search__item">
     <input type="text" :placeholder="props.placeholder" class="input__search" />
-    <div v-if="props.icon" :class="props.icon"></div>
+    <div v-if="props.icon" :class="props.icon" :style="{ backgroundColor: props.iconColor }"></div>
   </div>
 </template>
 <script setup>
@@ -14,6 +14,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  iconColor: {
+    type: String,
+    default: 'black',
+  },
 })
 </script>
 
@@ -22,17 +26,28 @@ const props = defineProps({
   display: flex;
   align-items: center;
   background: rgba(239, 239, 239, 0.2);
-  padding: 5px 10px;
+  padding: 0px 10px;
+  border: 1px solid #babec5;
+  border-radius: 2px;
 }
 .input__search {
-  background: transparent;
+  font-size: 13px;
+  height: var(--input-height);
+  color: inherit;
+  position: relative;
+  padding: 0 10px;
+  box-sizing: border-box;
+  width: 100%;
   border: none;
-  color: white;
-  outline: none;
-  width: 200px;
 }
 .input__search::placeholder {
-  color: white;
   font-style: italic;
+}
+.input__search:focus {
+  border: none;
+  outline: none;
+}
+.search__item:focus-within {
+  border: 1px solid var(--primary--color);
 }
 </style>

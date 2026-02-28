@@ -266,4 +266,27 @@
   height: 20px;
   background-color: #6b6c72;
 }
+
+.reload__icon {
+  -webkit-mask-image: var(--icon--url);
+  -webkit-mask-position: -424px -201px;
+  -webkit-mask-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  background-color: var(--default--color);
+}
+
+.excel__icon {
+  background: var(--icon--url) no-repeat -705px -200px;
+  width: 24px;
+  height: 24px;
+}
+.settings__icon {
+  -webkit-mask-image: var(--icon--url);
+  -webkit-mask-position: -90px -200px;
+  -webkit-mask-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  background-color: var(--default--color);
+}
 /* kết thúc css cho icon */

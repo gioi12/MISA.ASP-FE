@@ -36,6 +36,7 @@ import TheSidebar from '@/layouts/TheSidebar.vue'
   padding-left: 16px;
   min-width: 0;
   overflow: hidden;
+  height: 100%;
 }
 .layout__menu {
   background-color: white;

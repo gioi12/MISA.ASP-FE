@@ -1,0 +1,33 @@
+export const columns = [
+  { key: 'checkbox', title: '', width: 40, minWidth: 40, type: 'custom', sticky: 'left' },
+  { key: 'employeeCode', title: 'Mã nhân viên', width: 110, minWidth: 80 },
+  { key: 'employeeName', title: 'Tên nhân viên', width: 160, minWidth: 120 },
+  { key: 'taxCode', title: 'Mã số thuế', width: 120, minWidth: 90 },
+  { key: 'position', title: 'Chức danh', width: 130, minWidth: 100 },
+  { key: 'unitCode', title: 'Mã đơn vị', width: 100, minWidth: 80 },
+  { key: 'unitName', title: 'Tên đơn vị', width: 140, minWidth: 110 },
+  { key: 'bankAccount', title: 'Số tài khoản', width: 130, minWidth: 100 },
+  { key: 'bankName', title: 'Tên ngân hàng', width: 130, minWidth: 100 },
+  { key: 'status', title: 'Trạng thái', width: 110, minWidth: 90 },
+  { key: 'mobile', title: 'Số điện thoại', width: 120, minWidth: 100 },
+  { key: 'gender', title: 'Giới tính', width: 70, minWidth: 60 },
+  { key: 'dob', title: 'Ngày sinh', width: 110, minWidth: 90 },
+  { key: 'passport', title: 'Hộ chiếu', width: 120, minWidth: 90 },
+  { key: 'identity', title: 'CCCD/CMND', width: 140, minWidth: 110 },
+  { key: 'issueDate', title: 'Ngày cấp', width: 110, minWidth: 90 },
+  { key: 'issuePlace', title: 'Nơi cấp', width: 130, minWidth: 100 },
+  { key: 'isCustomer', title: 'khách hàng', width: 70, minWidth: 60, type: 'custom' },
+  { key: 'isSupplier', title: 'nhà cung cấp', width: 70, minWidth: 60, type: 'custom' },
+  { key: 'createdDate', title: 'Ngày tạo', width: 110, minWidth: 90 },
+  { key: 'createdBy', title: 'Người tạo', width: 110, minWidth: 90 },
+  { key: 'modifiedDate', title: 'Ngày sửa', width: 110, minWidth: 90 },
+  { key: 'modifiedBy', title: 'Người sửa', width: 110, minWidth: 90 },
+  { key: 'action', title: 'Chức năng', width: 100, minWidth: 100, type: 'custom', sticky: 'right' },
+]
+
+export const options = [
+  { label: '10 bản ghi trên 1 trang', value: 10 },
+  { label: '20 bản ghi trên 1 trang', value: 20 },
+  { label: '50 bản ghi trên 1 trang', value: 50 },
+  { label: '100 bản ghi trên 1 trang', value: 100 },
+]

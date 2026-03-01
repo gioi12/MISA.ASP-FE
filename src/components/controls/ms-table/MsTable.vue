@@ -11,10 +11,20 @@
 
     <thead>
       <tr>
-        <th v-for="(col, index) in internalColumns" :key="col.key">
+        <th
+          v-for="(col, index) in internalColumns"
+          :key="col.key"
+          :style="getStickyStyle(col, true)"
+        >
           <div class="th-content">
-            {{ col.title }}
-
+            <template v-if="col.type === 'custom'">
+              <slot :name="col.key + '-header'" :field="col">
+                {{ col.title }}
+              </slot>
+            </template>
+            <template v-else>
+              {{ col.title }}
+            </template>
             <!-- Thanh kéo resize -->
             <div class="resize-handle" @mousedown="startResize($event, index)" />
           </div>
@@ -24,8 +34,13 @@
 
     <tbody>
       <tr v-for="(row, rowIndex) in data" :key="rowIndex">
-        <td v-for="col in internalColumns" :key="col.key">
-          {{ row[col.key] }}
+        <td v-for="col in internalColumns" :key="col.key" :style="getStickyStyle(col, false)">
+          <template v-if="col.type === 'custom'">
+            <slot :name="col.key" :row="row" :field="col" :value="row[col.key]"> </slot>
+          </template>
+          <template v-else>
+            {{ row[col.key] }}
+          </template>
         </td>
       </tr>
     </tbody>
@@ -50,6 +65,19 @@ const props = defineProps({
     required: true,
   },
 })
+/**
+ * Lấy style cho cột sticky
+ * @param col
+ */
+function getStickyStyle(col, isHeader) {
+  if (!col.sticky) return {}
+
+  return {
+    position: 'sticky',
+    [col.sticky]: '0px',
+    zIndex: isHeader ? 20 : 2,
+  }
+}
 
 /*
   internalColumns:
@@ -129,7 +157,7 @@ th {
   min-height: var(--grid-header-height);
   height: var(--grid-header-height);
   position: sticky;
-  z-index: 2;
+  z-index: 10;
   top: 0;
   background-color: #eef1f5;
   vertical-align: middle;
@@ -144,6 +172,7 @@ td {
   padding: 0 10px;
   border-bottom: 1px solid #c7c7c7;
   border-right: 1px dotted #c7c7c7;
+  background-color: #fff;
 }
 
 /*

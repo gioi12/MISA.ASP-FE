@@ -9,8 +9,9 @@
               type="primary"
               color="white"
               :class="['ms-radius-true', 'ms-dropdown-style-default']"
+              @click="open = true"
             >
-              <div>Thêm</div>
+              Thêm
             </ms-button>
             <div class="line"></div>
             <ms-button
@@ -38,9 +39,13 @@
         <div class="layout__toolbars">
           <div class="layout__toolbars-left">
             <div class="arrow-check__icon"></div>
-            <div>
+            <div class="flex-gap-10">
               <ms-button type="add" color="black" icon="expand-more__icon" positionIcon="right">
                 <div>Thực hiện hàng loạt</div>
+              </ms-button>
+
+              <ms-button type="add" color="black" icon="expand-more__icon" positionIcon="right">
+                <div>Lọc</div>
               </ms-button>
             </div>
           </div>
@@ -50,6 +55,7 @@
                 placeholder="Tìm theo mã,tên nhân viên"
                 icon="search__icon"
                 iconColor="black"
+                v-model="searchText"
               />
             </div>
             <div>
@@ -68,18 +74,18 @@
             <ms-table :columns="columns" :data="rows">
               <!-- check box -->
               <template #checkbox-header>
-                <input type="checkbox" />
+                <ms-checkbox></ms-checkbox>
               </template>
               <template #checkbox="{ row }">
-                <input type="checkbox" @click="console.log(row)" />
+                <ms-checkbox @click="console.log(row)"></ms-checkbox>
               </template>
               <!-- khách hàng -->
               <template #isCustomer="{ row }">
-                <input type="checkbox" :checked="row.isCustomer" />
+                <ms-checkbox v-model="row.isCustomer" :disabled="true"></ms-checkbox>
               </template>
               <!-- nhà cung cấp -->
               <template #isSupplier="{ row }">
-                <input type="checkbox" :checked="row.isSupplier" />
+                <ms-checkbox v-model="row.isSupplier" :disabled="true"></ms-checkbox>
               </template>
               <!-- action -->
               <template #action-header>
@@ -101,6 +107,12 @@
       </div>
     </div>
   </div>
+  <EmployeeForm
+    :open="open"
+    @close="handleCloseForm"
+    v-model="employeeModel"
+    :masterData="masterData"
+  />
 </template>
 <script setup>
 import MsButton from '@/components/controls/ms-button/MsButton.vue'
@@ -108,6 +120,9 @@ import MsInput from '@/components/controls/ms-input/MsInput.vue'
 import MsTable from '@/components/controls/ms-table/MsTable.vue'
 import MsPagination from '@/components/controls/ms-pagination/MsPagination.vue'
 import employeeAPI from '@/apis/components/employee/employeeAPI'
+import EmployeeForm from '@/views/employee/EmployeeForm.vue'
+import MsCheckbox from '@/components/controls/ms-checkbox/MsCheckbox.vue'
+import { employee } from '@/models/employee'
 import { options, columns } from '@/constants/employeeConstants'
 import { onMounted, ref, computed, watch } from 'vue'
 // định nghĩa state
@@ -115,25 +130,57 @@ const rows = ref([])
 const size = ref(10)
 const page = ref(1)
 const total = ref(0)
+const searchText = ref('')
+const open = ref(false)
+// model employee
+const employeeModel = ref(employee())
+// đặt time cho debounce text
+let timer = null
+//master data cho form
+const masterData = ref({})
 /**
  * fetch dữ liệu employee
  */
-async function fetchData() {
-  const res = await employeeAPI.paging({ page: page.value, size: size.value })
+async function fetchData(search = '') {
+  const res = await employeeAPI.filter({ page: page.value, size: size.value, searchText: search })
   rows.value = res.data.data
   total.value = res.data.total
+}
+/**
+ * Gọi dữ liệu master data form
+ */
+async function fetchMasterData() {
+  const res = await employeeAPI.masterDataForm()
+  masterData.value = res.data
 }
 /**
  * Gọi data
  */
 onMounted(() => {
   fetchData()
+  fetchMasterData()
 })
 /**
- * theo dõi sự thay đổi của page va size
+ * theo dõi sự thay đổi của page
  */
-watch([page, size], () => {
-  fetchData()
+watch(page, () => {
+  fetchData(searchText.value)
+})
+/**
+ * theo dõi sự thay đổi của size
+ */
+watch(size, () => {
+  page.value = 1
+  fetchData(searchText.value)
+})
+/**
+ * bounce cho search text
+ */
+watch(searchText, (val) => {
+  clearTimeout(timer)
+  timer = setTimeout(() => {
+    fetchData(val)
+  }, 1000)
 })
 /**
  * Tính page
@@ -141,6 +188,10 @@ watch([page, size], () => {
 const totalPage = computed(() => {
   return Math.ceil(total.value / size.value)
 })
+
+function handleCloseForm() {
+  open.value = false
+}
 </script>
 <style scoped>
 .layout {
@@ -227,7 +278,10 @@ const totalPage = computed(() => {
   flex: 1;
   min-height: 0;
 }
-
+.flex-gap-10 {
+  display: flex;
+  gap: 10px;
+}
 .sticky {
   position: sticky !important;
 }

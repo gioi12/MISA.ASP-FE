@@ -3,6 +3,7 @@ import api from '@/apis/config/configAPI.js'
 export default class BaseAPI {
   constructor() {
     this.controler = null
+    this.api = api
   }
   /**
    * Phương thức lấy tất cả dữ liệu

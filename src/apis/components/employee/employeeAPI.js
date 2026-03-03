@@ -4,5 +4,11 @@ class employeeAPI extends BaseAPI {
     super()
     this.controler = 'employees'
   }
+  filter(params) {
+    return this.api.get(`${this.controler}/filter`, { params })
+  }
+  masterDataForm() {
+    return this.api.get(`${this.controler}/masterDataForm`)
+  }
 }
 export default new employeeAPI()

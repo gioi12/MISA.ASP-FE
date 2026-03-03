@@ -5,8 +5,8 @@
   --notify-header-height: 56px;
   --primary-button-height: 34px;
   --rounded-button-height: 32px;
-  --input-height: 32px;
-  --combobox-multi-item-height: 24px;
+  --input-height: 24px;
+  --combobox-multi-item-height: 26px;
   --combobox-dropdown-icon-width: 32px;
   --combobox-quick-add-width: 30px;
   --tab__router-height: 50px;
@@ -39,6 +39,7 @@
   --active--color: #85ff74;
   --menu--icon--color: #6b6c72;
   --default--color: #bababa;
+  --default-text-color: #111;
 }
 
 * {

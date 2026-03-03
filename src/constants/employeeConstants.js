@@ -31,3 +31,11 @@ export const options = [
   { label: '50 bản ghi trên 1 trang', value: 50 },
   { label: '100 bản ghi trên 1 trang', value: 100 },
 ]
+
+export const employeeBankcolumns = [
+  { key: 'bankCode', title: 'Số tài khoản', width: 40, minWidth: 40, type: 'custom' },
+  { key: 'bankName', title: 'Tên ngân hàng', width: 110, minWidth: 80, type: 'custom' },
+  { key: 'bankAddress', title: 'Chi nhánh', width: 160, minWidth: 120, type: 'custom' },
+  { key: 'bankBranch', title: 'Tỉnh/TP của ngân hàng', width: 160, minWidth: 120, type: 'custom' },
+  { key: 'action', title: '', width: 40, minWidth: 40, type: 'custom' },
+]

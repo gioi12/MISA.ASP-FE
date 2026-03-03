@@ -289,4 +289,28 @@
   height: 24px;
   background-color: var(--default--color);
 }
+.ask__icon {
+  -webkit-mask-image: var(--icon--url);
+  -webkit-mask-position: -89px -145px;
+  -webkit-mask-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  background-color: var(--default--color);
+}
+.close__icon {
+  -webkit-mask-image: var(--icon--url);
+  -webkit-mask-position: -146px -145px;
+  -webkit-mask-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  background-color: var(--default--color);
+}
+.delete__icon {
+  -webkit-mask-image: var(--icon--url);
+  -webkit-mask-position: -464px -313px;
+  -webkit-mask-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  background-color: var(--default--color);
+}
 /* kết thúc css cho icon */

@@ -1,6 +1,6 @@
 <template>
   <div class="search__item">
-    <input type="text" :placeholder="props.placeholder" class="input__search" />
+    <input type="text" :placeholder="props.placeholder" class="input__search" v-model="model" />
     <div v-if="props.icon" :class="props.icon" :style="{ backgroundColor: props.iconColor }"></div>
   </div>
 </template>
@@ -19,6 +19,8 @@ const props = defineProps({
     default: 'black',
   },
 })
+// định nghĩa model
+const model = defineModel()
 </script>
 
 <style scoped>
@@ -30,6 +32,10 @@ const props = defineProps({
   border: 1px solid #babec5;
   border-radius: 2px;
 }
+.search__item:hover {
+  outline: 1px solid #e2e2e2;
+}
+
 .input__search {
   font-size: 13px;
   height: var(--input-height);
@@ -40,6 +46,7 @@ const props = defineProps({
   width: 100%;
   border: none;
 }
+
 .input__search::placeholder {
   font-style: italic;
 }

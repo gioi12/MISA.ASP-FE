@@ -1,10 +1,5 @@
 <template>
   <table>
-    <!-- 
-        colgroup giúp kiểm soát width chuẩn nhất.
-        Khi resize, chỉ cần đổi width ở đây
-        header và body sẽ tự sync theo.
-      -->
     <colgroup>
       <col v-for="col in internalColumns" :key="col.key" :style="{ width: col.width + 'px' }" />
     </colgroup>
@@ -16,7 +11,7 @@
           :key="col.key"
           :style="getStickyStyle(col, true)"
         >
-          <div class="th-content">
+          <div class="th-content" :style="getAlignStyle(col)">
             <template v-if="col.type === 'custom'">
               <slot :name="col.key + '-header'" :field="col">
                 {{ col.title }}
@@ -25,7 +20,6 @@
             <template v-else>
               {{ col.title }}
             </template>
-            <!-- Thanh kéo resize -->
             <div class="resize-handle" @mousedown="startResize($event, index)" />
           </div>
         </th>
@@ -34,12 +28,22 @@
 
     <tbody>
       <tr v-for="(row, rowIndex) in data" :key="rowIndex">
-        <td v-for="col in internalColumns" :key="col.key" :style="getStickyStyle(col, false)">
+        <td
+          v-for="col in internalColumns"
+          :key="col.key"
+          :style="{ ...getStickyStyle(col, false), ...getAlignStyle(col) }"
+        >
           <template v-if="col.type === 'custom'">
-            <slot :name="col.key" :row="row" :field="col" :value="row[col.key]"> </slot>
+            <slot
+              :name="col.key"
+              :row="row"
+              :field="col"
+              :value="row[col.key]"
+              :rowIndex="rowIndex"
+            />
           </template>
           <template v-else>
-            {{ row[col.key] }}
+            {{ formatCell(col, row) }}
           </template>
         </td>
       </tr>
@@ -48,30 +52,94 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 
-/*
-  Props:
-  - columns: cấu hình cột
-  - data: dữ liệu table
-*/
 const props = defineProps({
-  columns: {
-    type: Array,
-    required: true,
-  },
-  data: {
-    type: Array,
-    required: true,
-  },
+  columns: { type: Array, required: true },
+  data: { type: Array, required: true },
 })
-/**
- * Lấy style cho cột sticky
- * @param col
- */
+
+// -------------------------------------------------------
+// Căn lề theo type
+// -------------------------------------------------------
+function getAlignStyle(col) {
+  const type = getColType(col)
+  switch (type) {
+    case 'number':
+      return { textAlign: 'right', justifyContent: 'flex-end' }
+    case 'date':
+      return { textAlign: 'center', justifyContent: 'center' }
+    case 'checkbox':
+      return { textAlign: 'center', justifyContent: 'center' }
+    default:
+      return { textAlign: 'left', justifyContent: 'flex-start' }
+  }
+}
+
+// -------------------------------------------------------
+// Xác định type của cột
+// col.dataType có thể khai báo tường minh: 'number' | 'date' | 'checkbox' | 'text'
+// Nếu không khai báo thì tự detect từ giá trị đầu tiên trong data
+// -------------------------------------------------------
+function getColType(col) {
+  if (col.dataType) return col.dataType
+
+  // Tự detect từ giá trị đầu tiên
+  const firstRow = props.data?.[0]
+  if (!firstRow) return 'text'
+
+  const value = col.render ? col.render(firstRow[col.key], firstRow) : firstRow[col.key]
+
+  if (typeof value === 'boolean') return 'checkbox'
+  if (typeof value === 'number') return 'number'
+  if (value instanceof Date) return 'date'
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return 'date'
+
+  return 'text'
+}
+
+// -------------------------------------------------------
+// Format giá trị cell
+// -------------------------------------------------------
+function formatCell(col, row) {
+  const value = col.render ? col.render(row[col.key], row) : row[col.key]
+  const type = getColType(col)
+
+  if (value === null || value === undefined) return ''
+
+  switch (type) {
+    case 'number':
+      return formatNumber(value)
+    case 'date':
+      return formatDate(value)
+    default:
+      return value
+  }
+}
+
+// 999.999,99
+function formatNumber(value) {
+  return Number(value).toLocaleString('de-DE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
+// dd/MM/yyyy
+function formatDate(value) {
+  const d = new Date(value)
+  if (isNaN(d)) return value
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  return `${dd}/${mm}/${yyyy}`
+}
+
+// -------------------------------------------------------
+// Sticky
+// -------------------------------------------------------
 function getStickyStyle(col, isHeader) {
   if (!col.sticky) return {}
-
   return {
     position: 'sticky',
     [col.sticky]: '0px',
@@ -79,10 +147,9 @@ function getStickyStyle(col, isHeader) {
   }
 }
 
-/*
-  internalColumns:
-  Clone từ props.columns để có thể chỉnh width
-*/
+// -------------------------------------------------------
+// Resize
+// -------------------------------------------------------
 const internalColumns = reactive(
   props.columns.map((col) => ({
     ...col,
@@ -91,48 +158,47 @@ const internalColumns = reactive(
   })),
 )
 
-/*
-  Biến dùng khi resize
-*/
-let startX = 0 // vị trí chuột ban đầu
-let startWidth = 0 // width ban đầu của cột
-let resizingIndex = null // đang resize cột nào
-let sensitivity = 0.5 // độ nhậy
-/*
-  Khi bắt đầu resize (mousedown)
-*/
+let startX = 0,
+  startWidth = 0,
+  resizingIndex = null
+const sensitivity = 0.5
+
 const startResize = (event, index) => {
   resizingIndex = index
   startX = event.clientX
   startWidth = internalColumns[index].width
-
-  // lắng nghe mousemove trên document
   document.addEventListener('mousemove', onResizing)
   document.addEventListener('mouseup', stopResize)
 }
 
-/*
-  Khi đang kéo chuột
-*/
 const onResizing = (event) => {
   if (resizingIndex === null) return
-
-  const diff = (event.clientX - startX) * sensitivity
-
-  const newWidth = startWidth + diff
-
-  // không cho nhỏ hơn minWidth
+  const newWidth = startWidth + (event.clientX - startX) * sensitivity
   internalColumns[resizingIndex].width = Math.max(newWidth, internalColumns[resizingIndex].minWidth)
 }
 
-/*
-  Khi thả chuột
-*/
 const stopResize = () => {
   resizingIndex = null
   document.removeEventListener('mousemove', onResizing)
   document.removeEventListener('mouseup', stopResize)
 }
+
+// watch để sync khi columns prop thay đổi
+watch(
+  () => props.columns,
+  (newCols) => {
+    internalColumns.splice(
+      0,
+      internalColumns.length,
+      ...newCols.map((col) => ({
+        ...col,
+        width: col.width || 150,
+        minWidth: col.minWidth || 80,
+      })),
+    )
+  },
+  { deep: false },
+)
 </script>
 
 <style scoped>

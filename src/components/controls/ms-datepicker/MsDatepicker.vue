@@ -1,7 +1,7 @@
 <template>
   <a-config-provider :locale="viVN">
     <a-date-picker
-      v-model:value="date"
+      v-model:value="model"
       format="DD/MM/YYYY"
       placeholder="DD/MM/YYYY"
       class="ms-datepicker"
@@ -11,10 +11,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import viVN from 'ant-design-vue/es/locale/vi_VN'
-
-const date = ref()
+import dayjs from 'dayjs'
+const model = defineModel({
+  get(value) {
+    return value ? dayjs(value) : null
+  },
+  set(value) {
+    return value ? value.format('YYYY-MM-DD') : null
+  },
+})
 </script>
 
 <style scoped>

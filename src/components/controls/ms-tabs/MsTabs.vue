@@ -78,5 +78,7 @@ const changeTab = (key) => {
   border-top: none;
   background: #fff;
   height: 150px;
+  max-height: 150px;
+  overflow: auto;
 }
 </style>

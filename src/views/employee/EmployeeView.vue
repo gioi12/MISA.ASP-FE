@@ -40,13 +40,104 @@
           <div class="layout__toolbars-left">
             <div class="arrow-check__icon"></div>
             <div class="flex-gap-10">
-              <ms-button type="add" color="black" icon="expand-more__icon" positionIcon="right">
-                <div>Thực hiện hàng loạt</div>
-              </ms-button>
+              <ms-button-dropdown>
+                <template #button>
+                  <ms-button
+                    type="add"
+                    :color="selectedIds.length === 0 ? '#afafaf' : 'black'"
+                    icon="expand-more__icon"
+                    :icon-color="selectedIds.length === 0 ? '#afafaf' : 'black'"
+                    positionIcon="right"
+                  >
+                    <div>Thực hiện hàng loạt</div>
+                  </ms-button>
+                </template>
+                <template #default="{ close }">
+                  <div>
+                    <div
+                      class="menu__item"
+                      @click="
+                        () => {
+                          handleDeleteMany()
+                          close()
+                        }
+                      "
+                    >
+                      Xóa hàng loạt
+                    </div>
+                    <div
+                      class="menu__item"
+                      @click="
+                        () => {
+                          handleUpdateStatusMany(0)
+                          close()
+                        }
+                      "
+                    >
+                      Sử dụng hàng loạt
+                    </div>
+                    <div
+                      class="menu__item"
+                      @click="
+                        () => {
+                          handleUpdateStatusMany(1)
+                          close()
+                        }
+                      "
+                    >
+                      Ngừng sử dụng hàng loạt
+                    </div>
+                  </div>
+                </template>
+              </ms-button-dropdown>
 
-              <ms-button type="add" color="black" icon="expand-more__icon" positionIcon="right">
-                <div>Lọc</div>
-              </ms-button>
+              <ms-button-dropdown>
+                <template #button>
+                  <ms-button type="add" color="black" icon="expand-more__icon" positionIcon="right">
+                    <div>Lọc</div>
+                  </ms-button>
+                </template>
+                <div>
+                  <ms-filter-form @reset="handleResetFilter" @filter="handleApplyFilter">
+                    <div class="flex">
+                      <div class="w-1/2 p-r-6">
+                        <ms-editer label="Đơn vị" :required="true">
+                          <ms-combo-box
+                            :options="mapOption(masterData?.departments?.data || [], 'department')"
+                            mode="combo"
+                            :header-titles="{ code: 'Mã đơn vị', name: 'Tên đơn vị' }"
+                            v-model="filter.departmentId"
+                          />
+                        </ms-editer>
+
+                        <ms-editer label="Giới tính">
+                          <ms-combo-box
+                            :options="[
+                              { label: 'Nam', value: true },
+                              { label: 'Nữ', value: false },
+                            ]"
+                            v-model="filter.gender"
+                          />
+                        </ms-editer>
+                      </div>
+                      <div class="w-1/2">
+                        <ms-editer label="Chức danh">
+                          <ms-input v-model="filter.position" />
+                        </ms-editer>
+                        <ms-editer label="Trạng thái">
+                          <ms-combo-box
+                            v-model="filter.status"
+                            :options="[
+                              { label: 'Sử dụng', value: 0 },
+                              { label: 'Ngừng sử dụng', value: 1 },
+                            ]"
+                          />
+                        </ms-editer>
+                      </div>
+                    </div>
+                  </ms-filter-form>
+                </div>
+              </ms-button-dropdown>
             </div>
           </div>
           <div class="layout__toolbars-right">
@@ -60,9 +151,9 @@
             </div>
             <div>
               <div class="toolbars__right">
-                <div class="reload__icon"></div>
-                <div class="excel__icon"></div>
-                <div class="settings__icon"></div>
+                <div class="reload__icon pointer" @click="fetchData(searchText)"></div>
+                <div class="excel__icon pointer" @click="handleExportExcel"></div>
+                <div class="settings__icon pointer" @click="handleOpenSettings"></div>
               </div>
             </div>
           </div>
@@ -71,13 +162,20 @@
       <div class="layout__body-content">
         <div class="layout__control">
           <div class="layout__control-scroller">
-            <ms-table :columns="columns" :data="rows">
+            <ms-table :columns="visibleColumns" :data="rows">
               <!-- check box -->
               <template #checkbox-header>
-                <ms-checkbox></ms-checkbox>
+                <ms-checkbox
+                  :model-value="isAllSelected"
+                  :indeterminate="isIndeterminate"
+                  @update:modelValue="toggleAll"
+                />
               </template>
               <template #checkbox="{ row }">
-                <ms-checkbox @click="console.log(row)"></ms-checkbox>
+                <ms-checkbox
+                  :model-value="selectedIds.includes(row.employeeId)"
+                  @update:modelValue="toggleRow(row)"
+                />
               </template>
               <!-- khách hàng -->
               <template #isCustomer="{ row }">
@@ -92,7 +190,40 @@
                 <div>Chức năng</div>
               </template>
               <template #action="{ row }">
-                <div class="cursor-pointer" @click="console.log(row)">Sửa</div>
+                <div>
+                  <ms-button
+                    :class="['ms-button-no-border']"
+                    color="#0075c0"
+                    @click="handleFixData(row)"
+                  >
+                    Sửa
+                  </ms-button>
+                  <ms-button-dropdown>
+                    <template #button>
+                      <ms-button
+                        :class="['ms-button-no-border']"
+                        :icon-color="'#0075c0'"
+                        :icon="'expand-more__icon'"
+                        positionIcon="right"
+                      >
+                      </ms-button>
+                    </template>
+
+                    <template #default="{ close }">
+                      <div>
+                        <div class="menu__item" @click="(handleDuplicateData(row), close())">
+                          Nhân bản
+                        </div>
+
+                        <div class="menu__item" @click="(handleDelete(row), close())">Xóa</div>
+
+                        <div class="menu__item" @click="(handleChangeStatus(row), close())">
+                          {{ row.status === 'ACTIVE' ? 'Ngừng sử dụng' : 'Sử dụng' }}
+                        </div>
+                      </div>
+                    </template>
+                  </ms-button-dropdown>
+                </div>
               </template>
             </ms-table>
           </div>
@@ -112,6 +243,14 @@
     @close="handleCloseForm"
     v-model="employeeModel"
     :masterData="masterData"
+    @store="handleStore"
+    @store-and-add="handleStoreAndAdd"
+  />
+  <EmployeeSettings
+    :open="openSettings"
+    @close="handleCloseSettings"
+    @store="onStoreCustomizer"
+    :column-states="columnStates"
   />
 </template>
 <script setup>
@@ -122,9 +261,29 @@ import MsPagination from '@/components/controls/ms-pagination/MsPagination.vue'
 import employeeAPI from '@/apis/components/employee/employeeAPI'
 import EmployeeForm from '@/views/employee/EmployeeForm.vue'
 import MsCheckbox from '@/components/controls/ms-checkbox/MsCheckbox.vue'
+import MsButtonDropdown from '@/components/controls/ms-button/MsButtonDropdown.vue'
+import MsFilterForm from '@/components/controls/ms-form/MsFilterForm.vue'
+import MsEditer from '@/components/controls/ms-editer/MsEditer.vue'
+import MsComboBox from '@/components/controls/ms-combo-box/MsComboBox.vue'
+
+import { dialog } from '@/utils/useDialog'
+import { exportExcel } from '@/utils/exportExcel'
+import { mapOption } from '@/utils/mappingHelper'
 import { employee } from '@/models/employee'
 import { options, columns } from '@/constants/employeeConstants'
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed, watch, toRaw } from 'vue'
+
+// settings column
+import { useColumnCustomizer } from '@/utils/useColumnCustomizer'
+import EmployeeSettings from './EmployeeSettings.vue'
+
+// Khởi tạo composable
+const { columnStates, visibleColumns, applyAndSave } = useColumnCustomizer(columns)
+
+function onStoreCustomizer(newStates) {
+  applyAndSave(newStates)
+  openSettings.value = false
+}
 // định nghĩa state
 const rows = ref([])
 const size = ref(10)
@@ -132,17 +291,36 @@ const page = ref(1)
 const total = ref(0)
 const searchText = ref('')
 const open = ref(false)
+//open settings
+const openSettings = ref(false)
+
 // model employee
 const employeeModel = ref(employee())
+
 // đặt time cho debounce text
 let timer = null
 //master data cho form
 const masterData = ref({})
+
+const selectedIds = ref([])
+
+const filter = ref({
+  departmentId: null,
+  gender: null,
+  position: '',
+  status: null,
+})
 /**
  * fetch dữ liệu employee
  */
 async function fetchData(search = '') {
-  const res = await employeeAPI.filter({ page: page.value, size: size.value, searchText: search })
+  const res = await employeeAPI.filter({
+    page: page.value,
+    size: size.value,
+    searchText: search,
+    ...filter.value,
+  })
+
   rows.value = res.data.data
   total.value = res.data.total
 }
@@ -188,9 +366,202 @@ watch(searchText, (val) => {
 const totalPage = computed(() => {
   return Math.ceil(total.value / size.value)
 })
+/**
+ * func sửa
+ * @param employee
+ */
+function handleFixData(employee) {
+  console.log(employee)
+  open.value = true
+  employeeModel.value = structuredClone(toRaw(employee))
+}
+/**
+ * Nhân bản
+ */
+function handleDuplicateData(employee) {
+  if (!employee) return
+
+  const cloned = structuredClone(toRaw(employee))
+  cloned.employeeCode = ''
+
+  employeeModel.value = cloned
+
+  open.value = true
+}
+async function handleDelete(employee) {
+  if (!employee) return
+  const ok = await dialog.warning({ message: 'Bạn có chắc muốn xóa không?' })
+  if (!ok) return
+
+  employeeAPI.deleteMany([employee.employeeId])
+  rows.value = rows.value.filter((r) => r.employeeId !== employee.employeeId)
+}
+
+function handleChangeStatus(employee) {
+  if (!employee) return
+  employeeAPI.updateStatus({
+    ids: [employee.employeeId],
+    status: employee.status === 'ACTIVE' ? 1 : 0,
+  })
+
+  employee.status = employee.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+}
+/**
+ * hàm xử lý chọn 1
+ * @param row
+ */
+function toggleRow(row) {
+  const id = row.employeeId
+
+  const index = selectedIds.value.indexOf(id)
+
+  if (index === -1) {
+    selectedIds.value.push(id)
+  } else {
+    selectedIds.value.splice(index, 1)
+  }
+}
+/**
+ * Kiểm tra đã chọn hết tất cả các dòng trong table chưa
+ */
+const isAllSelected = computed(() => {
+  return rows.value.length > 0 && selectedIds.value.length === rows.value.length
+})
+
+/**
+ * Kiểm tra trạng thái chọn một phần (indeterminate)
+ */
+const isIndeterminate = computed(() => {
+  return selectedIds.value.length > 0 && selectedIds.value.length < rows.value.length
+})
+
+/**
+ * Xử lý khi click checkbox header (chọn tất cả / bỏ chọn tất cả)
+ */
+function toggleAll(val) {
+  if (val) {
+    selectedIds.value = rows.value.map((r) => r.employeeId)
+  } else {
+    selectedIds.value = []
+  }
+}
 
 function handleCloseForm() {
+  employeeModel.value = employee()
   open.value = false
+}
+async function handleStore() {
+  try {
+    const isUpdate = !!employeeModel.value.employeeId
+
+    if (isUpdate) {
+      const res = await employeeAPI.updateEmployeeForm(employeeModel.value)
+      // cập nhật lại row trong bảng
+      const index = rows.value.findIndex((r) => r.employeeId === res.data.employeeId)
+      if (index !== -1) rows.value[index] = res.data
+    } else {
+      const res = await employeeAPI.addEmployeeForm(employeeModel.value)
+      rows.value.unshift(res.data)
+      if (rows.value.length > size.value) rows.value.pop()
+    }
+
+    employeeModel.value = employee()
+    open.value = false
+  } catch (error) {
+    console.error('Lưu thất bại:', error)
+  }
+}
+async function handleStoreAndAdd() {
+  try {
+    const res = await employeeAPI.addEmployeeForm(employeeModel.value)
+    rows.value.unshift(res.data)
+    if (rows.value.length > size.value) rows.value.pop()
+
+    // Reset model nhưng KHÔNG đóng form
+    employeeModel.value = employee()
+  } catch (error) {
+    console.error('Lưu thất bại:', error)
+  }
+}
+async function handleDeleteMany() {
+  if (!selectedIds.value.length) return
+
+  const ok = await dialog.warning({ message: 'Bạn có chắc muốn xóa không?' })
+  if (!ok) return
+
+  await employeeAPI.deleteMany(selectedIds.value)
+
+  selectedIds.value = []
+  fetchData()
+}
+
+/**
+ * Cập nhật trạng thái sử dụng / không sử dụng cho nhiều employee
+ *
+ * @param {String} status -  0 'ACTIVE' |1 'INACTIVE'
+ */
+async function handleUpdateStatusMany(status) {
+  if (!selectedIds.value.length) {
+    return
+  }
+  try {
+    await employeeAPI.updateStatus({
+      ids: selectedIds.value,
+      status: status,
+    })
+
+    selectedIds.value = []
+
+    await fetchData()
+  } catch (error) {
+    console.error(error)
+  }
+}
+/**
+ * áp dụng lọc
+ */
+function handleApplyFilter() {
+  page.value = 1
+  fetchData()
+}
+/**
+ * Hàm reset lọc
+ */
+function handleResetFilter() {
+  filter.value = {
+    departmentId: null,
+    gender: null,
+    position: '',
+    status: null,
+  }
+
+  page.value = 1
+  fetchData()
+}
+
+/**
+ * xuất excel
+ */
+async function handleExportExcel() {
+  try {
+    const res = await employeeAPI.filter({
+      page: 1,
+      size: total.value,
+      searchText: searchText.value,
+      ...filter.value,
+    })
+
+    exportExcel(res.data.data, columns, 'danh_sach_nhan_vien.xlsx')
+  } catch (error) {
+    console.error('Xuất Excel thất bại:', error)
+  }
+}
+
+function handleOpenSettings() {
+  openSettings.value = true
+}
+function handleCloseSettings() {
+  openSettings.value = false
 }
 </script>
 <style scoped>
@@ -295,6 +666,20 @@ function handleCloseForm() {
 
 .line {
   border-left: 1px solid rgba(255, 255, 255, 0.5);
+}
+.menu__item {
+  cursor: pointer;
+  padding: 5px 10px;
+}
+.menu__item:hover {
+  background-color: #f5f5f5;
+  color: var(--primary--color);
+}
+.flex {
+  display: flex;
+}
+.pointer {
+  cursor: pointer;
 }
 /* kết thúc css cho component */
 </style>

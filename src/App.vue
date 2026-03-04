@@ -1,6 +1,7 @@
 <script setup>
 import TheHeader from '@/layouts/TheHeader.vue'
 import TheSidebar from '@/layouts/TheSidebar.vue'
+import MsDialog from '@/components/controls/ms-dialog/MsDialog.vue'
 </script>
 
 <template>
@@ -17,6 +18,7 @@ import TheSidebar from '@/layouts/TheSidebar.vue'
       </div>
     </div>
   </div>
+  <ms-dialog />
 </template>
 
 <style scoped>

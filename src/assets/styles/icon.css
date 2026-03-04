@@ -309,8 +309,8 @@
   -webkit-mask-image: var(--icon--url);
   -webkit-mask-position: -464px -313px;
   -webkit-mask-repeat: no-repeat;
-  width: 24px;
-  height: 24px;
+  width: 15px;
+  height: 15px;
   background-color: var(--default--color);
 }
 /* kết thúc css cho icon */

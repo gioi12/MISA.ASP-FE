@@ -59,7 +59,14 @@ const props = defineProps({
   font-size: 14px;
   background: transparent;
 }
-
+.button {
+  background: #fff;
+  border: 1px solid #8d9096;
+  border-radius: 3px !important;
+  padding: 2px 20px !important;
+  margin-right: 10px;
+  font-weight: 700;
+}
 .button__icon {
   display: inline-block;
   align-items: center;
@@ -87,6 +94,15 @@ const props = defineProps({
   color: #fff;
   background-color: var(--primary--color);
 }
+.ms-button-secondary {
+  border: 1px solid #8d9096;
+  color: #111;
+  background-color: transparent;
+}
+.ms-button-no-border {
+  border: none !important;
+  padding: 8px 5px 8px 10px;
+}
 /* kết thúc css cho loại button */
 
 /* css tùy chỉnh cho button */
@@ -103,6 +119,17 @@ const props = defineProps({
 }
 .ms-padding-is-single-false-size-default {
   padding: 8px 12px 8px 8px;
+}
+.ms-button-size-small {
+  height: 24px;
+  padding: 3px 16px;
+  font-size: 13px;
+}
+.text-white {
+  color: white !important;
+}
+.ms-button-dialog {
+  padding: 8px 16px 8px 16px !important;
 }
 /* kết thúc css tùy chỉnh cho button */
 </style>

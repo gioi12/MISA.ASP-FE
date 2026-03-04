@@ -22,5 +22,17 @@ export const employee = () => ({
   baseSalary: 0,
   salaryCoefficient: 0.0,
   insuranceSalary: 0,
-  banks: [],
+  numberOfDependents: 0,
+  address: '',
+  fixedPhone: '',
+  email: '',
+  banks: [
+    {
+      bankId: null,
+      bankCode: '',
+      bankName: '',
+      bankAddress: '',
+      bankBranch: '',
+    },
+  ],
 })

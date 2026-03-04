@@ -4,9 +4,11 @@
     <div
       class="drag__form"
       :style="{
-        transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
+        transform: !props.settingsMode
+          ? `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`
+          : 'none',
       }"
-      :class="{ 'is-dragging': isDragging }"
+      :class="{ 'is-dragging': isDragging, 'drag__form--settings': props.settingsMode }"
       @mousedown="startDrag"
     >
       <div class="form__content">
@@ -47,11 +49,13 @@
                   <div class="flex gap-8">
                     <button
                       class="ms-button ms-button-secondary ms-button-size-default ms-button-radius-false"
+                      @click="handleStore"
                     >
                       Cất
                     </button>
                     <button
                       class="ms-button ms-button-primary ms-button-size-default ms-button-radius-false"
+                      @click="handleStoreAndAdd"
                     >
                       Cất và thêm
                     </button>
@@ -78,9 +82,13 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  settingsMode: {
+    type: Boolean,
+    default: false,
+  },
 })
 // định nghĩa emit cho đóng
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'store', 'storeAndAdd'])
 
 const position = ref({ x: 0, y: 0 })
 const isDragging = ref(false)
@@ -92,6 +100,12 @@ const IGNORE_CLASSES = ['ms-combo', 'ms-checkbox', 'ms-radio', 'ms-date-picker']
 
 function handleClose() {
   emit('close')
+}
+function handleStore() {
+  emit('store')
+}
+function handleStoreAndAdd() {
+  emit('storeAndAdd')
 }
 
 function shouldIgnore(target) {
@@ -291,4 +305,16 @@ onUnmounted(() => {
 .cursor-pointer {
   cursor: pointer;
 }
+/* css form cho settings */
+.drag__form--settings {
+  display: flex;
+  justify-content: flex-end;
+  height: 100%;
+  right: 0;
+  top: 0;
+  left: auto;
+  width: auto;
+}
+
+/* kết thúc css form cho settings */
 </style>

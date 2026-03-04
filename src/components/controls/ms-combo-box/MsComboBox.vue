@@ -14,13 +14,33 @@
     <div class="combo-actions">
       <div class="expand-more__icon" @click="toggleDropdown"></div>
       <div v-if="isOpen" class="combo__dropdown" :class="dropdownPosition">
+        <!-- Header chỉ hiển thị khi mode combo -->
+        <div v-if="props.mode === 'combo'" class="combo__header">
+          <span class="combo__code">
+            {{ props.headerTitles.code }}
+          </span>
+          <span class="combo__name">
+            {{ props.headerTitles.name }}
+          </span>
+        </div>
+
+        <!-- Danh sách -->
         <div
           v-for="item in filteredOptions"
           :key="item.value"
           class="combo__item"
           @click="selectItem(item)"
         >
-          {{ item.label }}
+          <template v-if="props.mode === 'combo'">
+            <div class="combo__row">
+              <span class="combo__code">{{ item.code }}</span>
+              <span class="combo__name">{{ item.label }}</span>
+            </div>
+          </template>
+
+          <template v-else>
+            {{ item.label }}
+          </template>
         </div>
 
         <div v-if="filteredOptions.length === 0" class="combo__empty">Không có dữ liệu</div>
@@ -49,6 +69,17 @@ const props = defineProps({
   selectedIndex: {
     type: Number,
     default: -1,
+  },
+  mode: {
+    type: String,
+    default: 'select', // 'select' | 'combo'
+  },
+  headerTitles: {
+    type: Object,
+    default: () => ({
+      code: 'Mã',
+      name: 'Tên',
+    }),
   },
 })
 const model = defineModel()
@@ -118,6 +149,8 @@ watch(
     const found = props.options.find((o) => o.value === val)
     if (found) {
       searchText.value = found.label
+    } else {
+      searchText.value = ''
     }
   },
   { immediate: true },
@@ -126,10 +159,10 @@ watch(
  * Khi selectedIndex thay đổi từ ngoài
  */
 watch(
-  () => props.selectedIndex,
-  (index) => {
-    if (index >= 0 && index < props.options.length) {
-      const item = props.options[index]
+  [() => props.selectedIndex, () => props.options],
+  ([index, options]) => {
+    if (index >= 0 && index < options.length) {
+      const item = options[index]
       searchText.value = item.label
       model.value = item.value
     }
@@ -222,5 +255,28 @@ onBeforeUnmount(() => {
 .combo__empty {
   padding: 6px 8px;
   color: #999;
+}
+
+.combo__row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.combo__code {
+  width: 80px;
+  font-weight: 600;
+}
+
+.combo__name {
+  flex: 1;
+}
+
+.combo__header {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-weight: 600;
+  background-color: #f4f5f8;
+  border-bottom: 1px solid #ddd;
 }
 </style>

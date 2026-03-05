@@ -31,9 +31,9 @@ const dialog = {
     return open({
       type: 'question',
       buttons: [
-        { text: 'Hủy', class: 'ms-button-secondary', value: false },
-        { text: 'Không', class: 'ms-button-secondary', value: false },
-        { text: 'Có', class: 'ms-button--primary', value: true },
+        { text: 'Hủy', class: 'ms-button-secondary', value: 'cancel' },
+        { text: 'Không', class: 'ms-button-secondary', value: 'no' },
+        { text: 'Có', class: 'ms-button--primary', value: 'yes' },
       ],
       ...options,
     })

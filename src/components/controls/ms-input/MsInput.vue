@@ -92,7 +92,6 @@ const formatNumber = () => {
 .search__item {
   display: flex;
   align-items: center;
-  background: rgba(239, 239, 239, 0.2);
   padding: 0px 10px;
   border: 1px solid #babec5;
   border-radius: 2px;

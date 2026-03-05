@@ -6,7 +6,7 @@
           <div v-if="state.title" class="ms-dialog__header">{{ state.title }}</div>
 
           <div class="ms-dialog__body">
-            <div :class="['mi', 'mi-48', iconClass]" />
+            <div :class="[iconClass]" />
             <span class="ms-dialog__message">{{ state.message }}</span>
           </div>
 
@@ -36,12 +36,12 @@ import MsButton from '@/components/controls/ms-button/MsButton.vue'
 const iconClass = computed(
   () =>
     ({
-      info: 'mi-information-48',
-      success: 'mi-check-circle-48',
-      warning: 'mi-warning-48',
-      error: 'mi-error-48',
-      question: 'mi-exclamation-question-48',
-    })[state.value.type] ?? 'mi-information-48',
+      info: 'dialog__icon--info',
+      success: 'dialog__icon--success',
+      warning: 'dialog__icon--warning',
+      error: 'dialog__icon--error',
+      question: 'dialog__icon--alert',
+    })[state.value.type] ?? 'dialog__icon--alert',
 )
 </script>
 
@@ -62,6 +62,7 @@ const iconClass = computed(
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
+  padding: 32px;
 }
 
 /* Header */
@@ -78,7 +79,8 @@ const iconClass = computed(
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 16px 16px;
+  padding: 20px 16px 20px 16px;
+  min-width: 400px;
 }
 
 .ms-dialog__icon {

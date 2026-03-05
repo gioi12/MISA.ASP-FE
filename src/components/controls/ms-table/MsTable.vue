@@ -27,36 +27,47 @@
     </thead>
 
     <tbody>
-      <tr v-for="(row, rowIndex) in data" :key="rowIndex">
-        <td
-          v-for="col in internalColumns"
-          :key="col.key"
-          :style="{ ...getStickyStyle(col, false), ...getAlignStyle(col) }"
-        >
-          <template v-if="col.type === 'custom'">
-            <slot
-              :name="col.key"
-              :row="row"
-              :field="col"
-              :value="row[col.key]"
-              :rowIndex="rowIndex"
-            />
-          </template>
-          <template v-else>
-            {{ formatCell(col, row) }}
-          </template>
-        </td>
-      </tr>
+      <template v-if="loading">
+        <tr v-for="i in skeletonRows" :key="'skeleton-' + i">
+          <td v-for="col in internalColumns" :key="col.key">
+            <a-skeleton-input :active="true" size="small" style="width: 80%; height: 16px" />
+          </td>
+        </tr>
+      </template>
+      <template v-else>
+        <tr v-for="(row, rowIndex) in data" :key="rowIndex">
+          <td
+            v-for="col in internalColumns"
+            :key="col.key"
+            :style="{ ...getStickyStyle(col, false), ...getAlignStyle(col) }"
+          >
+            <template v-if="col.type === 'custom'">
+              <slot
+                :name="col.key"
+                :row="row"
+                :field="col"
+                :value="row[col.key]"
+                :rowIndex="rowIndex"
+              />
+            </template>
+            <template v-else>
+              {{ formatCell(col, row) }}
+            </template>
+          </td>
+        </tr>
+      </template>
     </tbody>
   </table>
 </template>
 
 <script setup>
 import { reactive, watch } from 'vue'
-
+import { SkeletonInput as ASkeletonInput } from 'ant-design-vue'
 const props = defineProps({
   columns: { type: Array, required: true },
   data: { type: Array, required: true },
+  loading: { type: Boolean, default: false },
+  skeletonRows: { type: Number, default: 10 },
 })
 
 // -------------------------------------------------------
@@ -68,6 +79,8 @@ function getAlignStyle(col) {
     case 'number':
       return { textAlign: 'right', justifyContent: 'flex-end' }
     case 'date':
+      return { textAlign: 'center', justifyContent: 'center' }
+    case 'datetime':
       return { textAlign: 'center', justifyContent: 'center' }
     case 'checkbox':
       return { textAlign: 'center', justifyContent: 'center' }
@@ -112,6 +125,8 @@ function formatCell(col, row) {
       return formatNumber(value)
     case 'date':
       return formatDate(value)
+    case 'datetime':
+      return formatDatetime(value)
     default:
       return value
   }
@@ -134,7 +149,17 @@ function formatDate(value) {
   const yyyy = d.getFullYear()
   return `${dd}/${mm}/${yyyy}`
 }
-
+function formatDatetime(value) {
+  const d = new Date(value)
+  if (isNaN(d) || d.getFullYear() <= 1) return ''
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`
+}
 // -------------------------------------------------------
 // Sticky
 // -------------------------------------------------------
@@ -142,7 +167,8 @@ function getStickyStyle(col, isHeader) {
   if (!col.sticky) return {}
   return {
     position: 'sticky',
-    [col.sticky]: '0px',
+    [col.sticky]: '-1px',
+    borderLeft: 'none',
     zIndex: isHeader ? 20 : 2,
   }
 }
@@ -215,6 +241,8 @@ table {
 
 th {
   border: 1px solid #ddd;
+  /* bỏ border top đi k lộ cạnh viền */
+  border-top: none;
   text-align: left;
   overflow: normal;
   overflow-wrap: break-word;
@@ -224,12 +252,14 @@ th {
   height: var(--grid-header-height);
   position: sticky;
   z-index: 10;
-  top: 0;
+  top: -1px;
   background-color: #eef1f5;
   vertical-align: middle;
 }
 td {
   border: 1px solid #ddd;
+  border-top: none;
+
   text-align: left;
   overflow: hidden;
   white-space: nowrap;

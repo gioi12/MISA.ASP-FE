@@ -260,10 +260,10 @@
 
 .arrow-check__icon {
   -webkit-mask-image: var(--icon--url);
-  -webkit-mask-position: -259px -147px;
+  -webkit-mask-position: -250px -140px;
   -webkit-mask-repeat: no-repeat;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   background-color: #6b6c72;
 }
 
@@ -275,12 +275,18 @@
   height: 24px;
   background-color: var(--default--color);
 }
-
+.reload__icon:hover {
+  background-color: #6b6c72 !important;
+}
 .excel__icon {
   background: var(--icon--url) no-repeat -705px -200px;
   width: 24px;
   height: 24px;
 }
+.excel__icon:hover {
+  background-position: -705px -256px !important;
+}
+
 .settings__icon {
   -webkit-mask-image: var(--icon--url);
   -webkit-mask-position: -90px -200px;
@@ -288,6 +294,9 @@
   width: 24px;
   height: 24px;
   background-color: var(--default--color);
+}
+.settings__icon:hover {
+  background-color: #6b6c72 !important;
 }
 .ask__icon {
   -webkit-mask-image: var(--icon--url);
@@ -312,5 +321,44 @@
   width: 15px;
   height: 15px;
   background-color: var(--default--color);
+}
+
+.dialog__icon--warning {
+  background-image: var(--icon--url);
+  background-position: -598px -463px;
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+
+.dialog__icon--error {
+  background-image: var(--icon--url);
+  background-position: -752px -462px;
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.dialog__icon--alert {
+  background-image: var(--icon--url);
+  background-position: -832px -462px;
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+
+.dialog__icon--info {
+  background-image: var(--icon--url);
+  background-position: -672px -462px;
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+
+.dialog__icon--success {
+  background-image: var(--icon--url);
+  background-position: -990px -462px;
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
 }
 /* kết thúc css cho icon */

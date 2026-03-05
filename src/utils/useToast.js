@@ -1,15 +1,19 @@
-// src/composables/useToast.js
 import { ref } from 'vue'
 
-const toastRef = ref(null)
+export const toasts = ref([])
+let idCounter = 0
 
 export function useToast() {
   function toast(message, type = 'info', duration = 3000) {
-    toastRef.value?.add(message, type, duration)
+    const id = ++idCounter
+    toasts.value.push({ id, message, type })
+    if (duration > 0)
+      setTimeout(() => {
+        toasts.value = toasts.value.filter((t) => t.id !== id)
+      }, duration)
   }
 
   return {
-    toastRef,
     toast,
     success: (msg) => toast(msg, 'success'),
     error: (msg) => toast(msg, 'error'),

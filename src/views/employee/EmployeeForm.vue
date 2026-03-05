@@ -295,6 +295,7 @@ import { mapOption } from '@/utils/mappingHelper'
 import { employeeBankcolumns } from '@/constants/employeeConstants'
 import { bank } from '@/models/bank'
 import { watch, ref, toRaw, reactive } from 'vue'
+const { error } = useToast()
 const props = defineProps({
   open: {
     type: Boolean,
@@ -305,7 +306,6 @@ const props = defineProps({
     required: true,
   },
 })
-const { error } = useToast()
 
 // bank model
 // định nghĩa model employee từ cha
@@ -371,12 +371,13 @@ function handleClose() {
 }
 async function handleStore() {
   if (!validate()) return
-  if (!localEmployee.value.employeeId) {
-    const res = await employeeAPI.checkExist(defaultCode.value)
-    if (res.data) {
-      error('Mã đã tồn tại!')
-      return
-    }
+  const res = await employeeAPI.checkExist({
+    code: defaultCode.value,
+    employeeId: localEmployee.value.employeeId,
+  })
+  if (res.data) {
+    error(`Mã nhân viên <${defaultCode.value}> đã tồn tại`)
+    return
   }
   localEmployee.value.employeeCode = defaultCode.value
   employee.value = structuredClone(toRaw(localEmployee.value))
@@ -385,12 +386,13 @@ async function handleStore() {
 }
 async function handleStoreAndAdd() {
   if (!validate()) return
-  if (!localEmployee.value.employeeId) {
-    const res = await employeeAPI.checkExist(defaultCode.value)
-    if (res.data) {
-      errors.employeeCode = 'Mã nhân viên này đã tồn tại'
-      return
-    }
+  const res = await employeeAPI.checkExist({
+    code: defaultCode.value,
+    employeeId: localEmployee.value.employeeId,
+  })
+  if (res.data) {
+    error(`Mã nhân viên <${defaultCode.value}> đã tồn tại`)
+    return
   }
   localEmployee.value.employeeCode = defaultCode.value
   employee.value = structuredClone(toRaw(localEmployee.value))

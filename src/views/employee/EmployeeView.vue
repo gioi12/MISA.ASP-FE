@@ -29,16 +29,44 @@
           </div>
         </div>
       </div>
-      <div class="layout__header-back">
-        <div class="arrow-left__icon"></div>
-        <a class="back__text">Tất cả danh mục</a>
+      <div class="flex-gap-10">
+        <div class="layout__header-back">
+          <div class="arrow-left__icon"></div>
+          <a class="back__text">Tất cả danh mục</a>
+        </div>
+        <div class="flex-gap-10">
+          <div v-if="filter.departmentId && isFilter" class="filter-tag">
+            <span>
+              {{
+                masterData?.departments?.data.find((x) => x.departmentId === filter.departmentId)
+                  ?.departmentName
+              }}
+            </span>
+            <button class="filter-tag__close" @click="removeFilter('departmentId')">✕</button>
+          </div>
+
+          <div v-if="filter.status != null && isFilter" class="filter-tag">
+            <span>{{ filter.status === 0 ? 'Sử dụng' : 'Ngừng sử dụng' }}</span>
+            <button class="filter-tag__close" @click="removeFilter('status')">✕</button>
+          </div>
+
+          <div v-if="filter.gender != null && isFilter" class="filter-tag">
+            <span>{{ filter.gender ? 'Nam' : 'Nữ' }}</span>
+            <button class="filter-tag__close" @click="removeFilter('gender')">✕</button>
+          </div>
+
+          <div v-if="filter.position && isFilter" class="filter-tag">
+            <span>{{ filter.position }}</span>
+            <button class="filter-tag__close" @click="removeFilter('position')">✕</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="layout__body">
       <div class="layout__body-toolbars">
         <div class="layout__toolbars">
           <div class="layout__toolbars-left">
-            <div class="arrow-check__icon"></div>
+            <div class="arrow-check__icon mr-10"></div>
             <div class="flex-gap-10">
               <ms-button-dropdown>
                 <template #button>
@@ -106,7 +134,7 @@
                             :options="mapOption(masterData?.departments?.data || [], 'department')"
                             mode="combo"
                             :header-titles="{ code: 'Mã đơn vị', name: 'Tên đơn vị' }"
-                            v-model="filter.departmentId"
+                            v-model="filterDraft.departmentId"
                           />
                         </ms-editer>
 
@@ -116,17 +144,17 @@
                               { label: 'Nam', value: true },
                               { label: 'Nữ', value: false },
                             ]"
-                            v-model="filter.gender"
+                            v-model="filterDraft.gender"
                           />
                         </ms-editer>
                       </div>
                       <div class="w-1/2">
                         <ms-editer label="Chức danh">
-                          <ms-input v-model="filter.position" />
+                          <ms-input v-model="filterDraft.position" />
                         </ms-editer>
                         <ms-editer label="Trạng thái">
                           <ms-combo-box
-                            v-model="filter.status"
+                            v-model="filterDraft.status"
                             :options="[
                               { label: 'Sử dụng', value: 0 },
                               { label: 'Ngừng sử dụng', value: 1 },
@@ -162,7 +190,7 @@
       <div class="layout__body-content">
         <div class="layout__control">
           <div class="layout__control-scroller">
-            <ms-table :columns="visibleColumns" :data="rows">
+            <ms-table :columns="visibleColumns" :data="rows" :loading="isLoading">
               <!-- check box -->
               <template #checkbox-header>
                 <ms-checkbox
@@ -267,6 +295,7 @@ import MsEditer from '@/components/controls/ms-editer/MsEditer.vue'
 import MsComboBox from '@/components/controls/ms-combo-box/MsComboBox.vue'
 
 import { dialog } from '@/utils/useDialog'
+import { useToast } from '@/utils/useToast'
 import { exportExcel } from '@/utils/exportExcel'
 import { mapOption } from '@/utils/mappingHelper'
 import { employee } from '@/models/employee'
@@ -276,7 +305,8 @@ import { onMounted, ref, computed, watch, toRaw } from 'vue'
 // settings column
 import { useColumnCustomizer } from '@/utils/useColumnCustomizer'
 import EmployeeSettings from './EmployeeSettings.vue'
-
+// khởi tạo toast
+const { error, success } = useToast()
 // Khởi tạo composable
 const { columnStates, visibleColumns, applyAndSave } = useColumnCustomizer(columns)
 
@@ -289,7 +319,10 @@ const rows = ref([])
 const size = ref(10)
 const page = ref(1)
 const total = ref(0)
+// loading data
+const isLoading = ref(false)
 const searchText = ref('')
+const isFilter = ref(false)
 const open = ref(false)
 //open settings
 const openSettings = ref(false)
@@ -310,19 +343,25 @@ const filter = ref({
   position: '',
   status: null,
 })
+// filter nháp để không bị cập nhật real time
+const filterDraft = ref({ ...filter.value })
 /**
  * fetch dữ liệu employee
  */
 async function fetchData(search = '') {
-  const res = await employeeAPI.filter({
-    page: page.value,
-    size: size.value,
-    searchText: search,
-    ...filter.value,
-  })
-
-  rows.value = res.data.data
-  total.value = res.data.total
+  isLoading.value = true
+  try {
+    const res = await employeeAPI.filter({
+      page: page.value,
+      size: size.value,
+      searchText: search,
+      ...filter.value,
+    })
+    rows.value = res.data.data
+    total.value = res.data.total
+  } finally {
+    isLoading.value = false
+  }
 }
 /**
  * Gọi dữ liệu master data form
@@ -335,7 +374,7 @@ async function fetchMasterData() {
  * Gọi data
  */
 onMounted(() => {
-  fetchData()
+  fetchData(searchText.value)
   fetchMasterData()
 })
 /**
@@ -371,7 +410,6 @@ const totalPage = computed(() => {
  * @param employee
  */
 function handleFixData(employee) {
-  console.log(employee)
   open.value = true
   employeeModel.value = structuredClone(toRaw(employee))
 }
@@ -383,18 +421,21 @@ function handleDuplicateData(employee) {
 
   const cloned = structuredClone(toRaw(employee))
   cloned.employeeCode = ''
-
+  cloned.employeeId = null
   employeeModel.value = cloned
 
   open.value = true
 }
 async function handleDelete(employee) {
   if (!employee) return
-  const ok = await dialog.warning({ message: 'Bạn có chắc muốn xóa không?' })
+  const ok = await dialog.warning({
+    message: `Bạn có thực sự muốn xóa Nhân viên  <${employee.employeeCode}> không?`,
+  })
   if (!ok) return
 
   employeeAPI.deleteMany([employee.employeeId])
   rows.value = rows.value.filter((r) => r.employeeId !== employee.employeeId)
+  success(`Xóa nhân viên <${employee.employeeCode}> thành công`)
 }
 
 function handleChangeStatus(employee) {
@@ -405,6 +446,10 @@ function handleChangeStatus(employee) {
   })
 
   employee.status = employee.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+
+  success(
+    `Cập nhật trạng thái <${employee.status === 'ACTIVE' ? 'Sử dụng' : 'Ngừng sử dụng'}>  cho nhân viên <${employee.employeeCode}>`,
+  )
 }
 /**
  * hàm xử lý chọn 1
@@ -459,40 +504,49 @@ async function handleStore() {
       // cập nhật lại row trong bảng
       const index = rows.value.findIndex((r) => r.employeeId === res.data.employeeId)
       if (index !== -1) rows.value[index] = res.data
+      success(`Cập nhật nhân viên <${res.data.employeeCode}> thành công`)
     } else {
       const res = await employeeAPI.addEmployeeForm(employeeModel.value)
       rows.value.unshift(res.data)
       if (rows.value.length > size.value) rows.value.pop()
+      success(`Thêm mới nhân viên <${res.data.employeeCode}> thành công`)
     }
 
     employeeModel.value = employee()
     open.value = false
-  } catch (error) {
-    console.error('Lưu thất bại:', error)
+  } catch {
+    error(`Lưu nhân viên <${employeeModel.value.employeeCode}> thất bại`)
   }
 }
 async function handleStoreAndAdd() {
   try {
     const res = await employeeAPI.addEmployeeForm(employeeModel.value)
     rows.value.unshift(res.data)
+    success(`Thêm mới nhân viên <${employeeModel.value.employeeCode}> thành công`)
     if (rows.value.length > size.value) rows.value.pop()
 
     // Reset model nhưng KHÔNG đóng form
     employeeModel.value = employee()
   } catch (error) {
-    console.error('Lưu thất bại:', error)
+    error(`Lưu nhân viên <${employeeModel.value.employeeCode}> thất bại`)
   }
 }
 async function handleDeleteMany() {
   if (!selectedIds.value.length) return
 
-  const ok = await dialog.warning({ message: 'Bạn có chắc muốn xóa không?' })
+  const ok = await dialog.warning({
+    message: `Bạn có chắc muốn xóa <${selectedIds.value.length} nhân viên> không?`,
+  })
   if (!ok) return
-
-  await employeeAPI.deleteMany(selectedIds.value)
+  try {
+    await employeeAPI.deleteMany(selectedIds.value)
+  } catch {
+    error(`Xóa <${selectedIds.value.length} nhân viên> thất bại`)
+  }
+  success(`Xóa <${selectedIds.value.length} nhân viên> thành công`)
 
   selectedIds.value = []
-  fetchData()
+  fetchData(searchText.value)
 }
 
 /**
@@ -509,36 +563,50 @@ async function handleUpdateStatusMany(status) {
       ids: selectedIds.value,
       status: status,
     })
-
+    success(
+      `${status === 0 ? 'Sử dụng' : 'Ngừng sử dụng'} cho <${selectedIds.value.length} nhân viên> thành công`,
+    )
     selectedIds.value = []
 
-    await fetchData()
-  } catch (error) {
-    console.error(error)
+    await fetchData(searchText.value)
+  } catch {
+    error(
+      `${status === 0 ? 'Sử dụng' : 'Ngừng sử dụng'} cho <${selectedIds.value.length} nhân viên> thất bại`,
+    )
   }
 }
 /**
  * áp dụng lọc
  */
-function handleApplyFilter() {
+function handleApplyFilter(fromDraft = true) {
+  // đẩy nháp thành filter
+  if (fromDraft) filter.value = { ...filterDraft.value }
   page.value = 1
-  fetchData()
+  isFilter.value = true
+  fetchData(searchText.value)
 }
 /**
  * Hàm reset lọc
  */
 function handleResetFilter() {
-  filter.value = {
-    departmentId: null,
-    gender: null,
-    position: '',
-    status: null,
-  }
+  //xóa nháp và filter
+  const empty = { departmentId: null, gender: null, position: '', status: null }
+  filter.value = { ...empty }
+  filterDraft.value = { ...empty }
+  isFilter.value = false
 
   page.value = 1
-  fetchData()
+  fetchData(searchText.value)
 }
-
+/**
+ * remove filter
+ * @param key
+ */
+function removeFilter(key) {
+  filter.value[key] = null
+  filterDraft.value[key] = null
+  handleApplyFilter(false)
+}
 /**
  * xuất excel
  */
@@ -565,6 +633,9 @@ function handleCloseSettings() {
 }
 </script>
 <style scoped>
+.mr-10 {
+  margin-right: 10px;
+}
 .layout {
   height: 100%;
 }
@@ -590,6 +661,7 @@ function handleCloseSettings() {
 .layout__header-back {
   display: flex;
   justify-content: flex-start;
+  align-items: center;
 }
 .back__text {
   color: #0075c0;
@@ -680,6 +752,36 @@ function handleCloseSettings() {
 }
 .pointer {
   cursor: pointer;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 20px;
+  background-color: #e6f4ff;
+  border: 1px solid #91caff;
+  color: #0075c0;
+  font-size: 13px;
+}
+
+.filter-tag__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #0075c0;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.filter-tag__close:hover {
+  opacity: 1;
 }
 /* kết thúc css cho component */
 </style>

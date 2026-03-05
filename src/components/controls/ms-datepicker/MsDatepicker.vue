@@ -15,7 +15,9 @@ import viVN from 'ant-design-vue/es/locale/vi_VN'
 import dayjs from 'dayjs'
 const model = defineModel({
   get(value) {
-    return value ? dayjs(value) : null
+    if (!value) return null
+    const d = dayjs(value)
+    return d.isValid() && d.year() > 1 ? d : null
   },
   set(value) {
     return value ? value.format('YYYY-MM-DD') : null

@@ -2,6 +2,7 @@
 import TheHeader from '@/layouts/TheHeader.vue'
 import TheSidebar from '@/layouts/TheSidebar.vue'
 import MsDialog from '@/components/controls/ms-dialog/MsDialog.vue'
+import MsToast from './components/controls/ms-toast/MsToast.vue'
 </script>
 
 <template>
@@ -19,6 +20,7 @@ import MsDialog from '@/components/controls/ms-dialog/MsDialog.vue'
     </div>
   </div>
   <ms-dialog />
+  <ms-toast />
 </template>
 
 <style scoped>

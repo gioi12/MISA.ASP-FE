@@ -88,7 +88,7 @@ const pageSize = computed({
 <style scoped>
 .ms-pagination {
   position: sticky;
-  bottom: 0;
+  bottom: -1px;
   left: 0;
   z-index: 2;
   background-color: #fff;

@@ -286,7 +286,14 @@
 .excel__icon:hover {
   background-position: -705px -256px !important;
 }
-
+.settings__nav__icon {
+  -webkit-mask-image: var(--icon--url);
+  -webkit-mask-position: -90px -200px;
+  -webkit-mask-repeat: no-repeat;
+  width: 24px;
+  height: 24px;
+  background-color: white;
+}
 .settings__icon {
   -webkit-mask-image: var(--icon--url);
   -webkit-mask-position: -90px -200px;

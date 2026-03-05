@@ -22,7 +22,7 @@
             <div class="search__icon"></div>
           </div>
           <div class="install__icon"></div>
-          <div class="settings__icon"></div>
+          <div class="settings__nav__icon"></div>
           <div class="notice__icon"></div>
           <div class="question__icon"></div>
           <div class="knowledge__icon"></div>

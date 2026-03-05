@@ -10,6 +10,7 @@
               color="white"
               :class="['ms-radius-true', 'ms-dropdown-style-default']"
               @click="open = true"
+              title="Thêm (Ctrl + 1)"
             >
               Thêm
             </ms-button>
@@ -33,32 +34,6 @@
         <div class="layout__header-back">
           <div class="arrow-left__icon"></div>
           <a class="back__text">Tất cả danh mục</a>
-        </div>
-        <div class="flex-gap-10">
-          <div v-if="filter.departmentId && isFilter" class="filter-tag">
-            <span>
-              {{
-                masterData?.departments?.data.find((x) => x.departmentId === filter.departmentId)
-                  ?.departmentName
-              }}
-            </span>
-            <button class="filter-tag__close" @click="removeFilter('departmentId')">✕</button>
-          </div>
-
-          <div v-if="filter.status != null && isFilter" class="filter-tag">
-            <span>{{ filter.status === 0 ? 'Sử dụng' : 'Ngừng sử dụng' }}</span>
-            <button class="filter-tag__close" @click="removeFilter('status')">✕</button>
-          </div>
-
-          <div v-if="filter.gender != null && isFilter" class="filter-tag">
-            <span>{{ filter.gender ? 'Nam' : 'Nữ' }}</span>
-            <button class="filter-tag__close" @click="removeFilter('gender')">✕</button>
-          </div>
-
-          <div v-if="filter.position && isFilter" class="filter-tag">
-            <span>{{ filter.position }}</span>
-            <button class="filter-tag__close" @click="removeFilter('position')">✕</button>
-          </div>
         </div>
       </div>
     </div>
@@ -173,7 +148,7 @@
               <ms-input
                 placeholder="Tìm theo mã,tên nhân viên"
                 icon="search__icon"
-                iconColor="black"
+                iconColor="#cccccc"
                 v-model="searchText"
               />
             </div>
@@ -186,11 +161,45 @@
             </div>
           </div>
         </div>
+        <div class="flex-gap-10">
+          <div v-if="filter.departmentId && isFilter" class="filter-tag">
+            <span>
+              {{
+                masterData?.departments?.data.find((x) => x.departmentId === filter.departmentId)
+                  ?.departmentName
+              }}
+            </span>
+            <button class="filter-tag__close" @click="removeFilter('departmentId')">✕</button>
+          </div>
+
+          <div v-if="filter.status != null && isFilter" class="filter-tag">
+            <span>{{ filter.status === 0 ? 'Sử dụng' : 'Ngừng sử dụng' }}</span>
+            <button class="filter-tag__close" @click="removeFilter('status')">✕</button>
+          </div>
+
+          <div v-if="filter.gender != null && isFilter" class="filter-tag">
+            <span>{{ filter.gender ? 'Nam' : 'Nữ' }}</span>
+            <button class="filter-tag__close" @click="removeFilter('gender')">✕</button>
+          </div>
+
+          <div v-if="filter.position && isFilter" class="filter-tag">
+            <span>{{ filter.position }}</span>
+            <button class="filter-tag__close" @click="removeFilter('position')">✕</button>
+          </div>
+          <div v-if="isFilter" class="filter-tag filter-tag-underline" @click="handleResetFilter">
+            <span>Xóa điều kiện lọc</span>
+          </div>
+        </div>
       </div>
       <div class="layout__body-content">
         <div class="layout__control">
           <div class="layout__control-scroller">
-            <ms-table :columns="visibleColumns" :data="rows" :loading="isLoading">
+            <ms-table
+              :columns="visibleColumns"
+              :data="rows"
+              :loading="isLoading"
+              v-model:selected-row="selectedIndex"
+            >
               <!-- check box -->
               <template #checkbox-header>
                 <ms-checkbox
@@ -223,6 +232,7 @@
                     :class="['ms-button-no-border']"
                     color="#0075c0"
                     @click="handleFixData(row)"
+                    title="Sửa (Ctrl + E)"
                   >
                     Sửa
                   </ms-button>
@@ -239,11 +249,21 @@
 
                     <template #default="{ close }">
                       <div>
-                        <div class="menu__item" @click="(handleDuplicateData(row), close())">
+                        <div
+                          class="menu__item"
+                          @click="(handleDuplicateData(row), close())"
+                          title="Nhân bản (Ctrl + Shift + C)"
+                        >
                           Nhân bản
                         </div>
 
-                        <div class="menu__item" @click="(handleDelete(row), close())">Xóa</div>
+                        <div
+                          class="menu__item"
+                          @click="(handleDelete(row), close())"
+                          title="Xóa (Ctrl + D)"
+                        >
+                          Xóa
+                        </div>
 
                         <div class="menu__item" @click="(handleChangeStatus(row), close())">
                           {{ row.status === 'ACTIVE' ? 'Ngừng sử dụng' : 'Sử dụng' }}
@@ -300,7 +320,7 @@ import { exportExcel } from '@/utils/exportExcel'
 import { mapOption } from '@/utils/mappingHelper'
 import { employee } from '@/models/employee'
 import { options, columns } from '@/constants/employeeConstants'
-import { onMounted, ref, computed, watch, toRaw } from 'vue'
+import { onMounted, ref, computed, watch, toRaw, onBeforeUnmount } from 'vue'
 
 // settings column
 import { useColumnCustomizer } from '@/utils/useColumnCustomizer'
@@ -334,7 +354,9 @@ const employeeModel = ref(employee())
 let timer = null
 //master data cho form
 const masterData = ref({})
-
+// selected row
+const selectedIndex = ref(-1)
+// select many id
 const selectedIds = ref([])
 
 const filter = ref({
@@ -630,8 +652,8 @@ async function handleExportExcel() {
     })
 
     exportExcel(res.data.data, columns, 'danh_sach_nhan_vien.xlsx')
-  } catch (error) {
-    console.error('Xuất Excel thất bại:', error)
+  } catch {
+    error('Xuất Excel thất bại')
   }
 }
 
@@ -641,6 +663,53 @@ function handleOpenSettings() {
 function handleCloseSettings() {
   openSettings.value = false
 }
+
+function handleKeydown(e) {
+  const tag = document.activeElement?.tagName
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return
+
+  const ctrl = e.ctrlKey
+  const shift = e.shiftKey
+
+  switch (true) {
+    // Thêm mới: Ctrl + 1
+    case ctrl && e.key === '1':
+      e.preventDefault()
+      open.value = true
+      break
+
+    // Sửa: Ctrl + E
+    case ctrl && e.key === 'e':
+      e.preventDefault()
+      if (selectedIndex.value >= 0) handleFixData(rows.value[selectedIndex.value])
+      break
+
+    // Nhân bản: Ctrl + Shift + C
+    case ctrl && shift && e.key === 'C':
+      e.preventDefault()
+      if (selectedIndex.value >= 0) handleDuplicateData(rows.value[selectedIndex.value])
+      break
+
+    // Xóa: Ctrl + D
+    case ctrl && e.key === 'd':
+      e.preventDefault()
+      if (selectedIndex.value >= 0) handleDelete(rows.value[selectedIndex.value])
+      break
+
+    // Di chuyển xuống
+    case e.key === 'ArrowDown':
+      if (selectedIndex.value < rows.value.length - 1) selectedIndex.value++
+      break
+
+    // Di chuyển lên
+    case e.key === 'ArrowUp':
+      if (selectedIndex.value > 0) selectedIndex.value--
+      break
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', handleKeydown))
+onBeforeUnmount(() => document.removeEventListener('keydown', handleKeydown))
 </script>
 <style scoped>
 .mr-10 {
@@ -768,10 +837,8 @@ function handleCloseSettings() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 0 10px;
+  padding: 10px 0 0 0;
   border-radius: 20px;
-  background-color: #e6f4ff;
-  border: 1px solid #91caff;
   color: #0075c0;
   font-size: 13px;
 }
@@ -782,16 +849,20 @@ function handleCloseSettings() {
   justify-content: center;
   background: none;
   border: none;
-  color: #0075c0;
+  color: #6b6c72;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 13px;
   padding: 0;
   line-height: 1;
-  opacity: 0.7;
+  font-weight: bold;
 }
 
 .filter-tag__close:hover {
   opacity: 1;
+}
+.filter-tag-underline:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 /* kết thúc css cho component */
 </style>

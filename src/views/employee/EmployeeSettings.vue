@@ -10,7 +10,7 @@
     <template #form-content-body__slot>
       <div class="customizer-body">
         <!-- Bảng drag-drop -->
-        <ms-table :columns="tableColumns" :data="localStates">
+        <ms-table :columns="tableColumns" :data="localStates" :class="'table-th-sticky'">
           <!-- Header: checkbox chọn tất cả + label -->
           <template #visible-header>
             <div class="visible-header">
@@ -136,6 +136,8 @@ function handleStore() {
 <style scoped>
 .customizer-body {
   padding: 8px 12px;
+  overflow: auto;
+  max-height: 500px;
 }
 
 .visible-header {
@@ -161,5 +163,10 @@ function handleStore() {
   font-size: 12px;
   color: #555;
   min-width: 16px;
+}
+.table-th-sticky {
+  position: sticky;
+  top: 10px;
+  z-index: 20px;
 }
 </style>

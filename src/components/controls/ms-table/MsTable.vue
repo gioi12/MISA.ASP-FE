@@ -35,7 +35,12 @@
         </tr>
       </template>
       <template v-else>
-        <tr v-for="(row, rowIndex) in data" :key="rowIndex">
+        <tr
+          v-for="(row, rowIndex) in data"
+          :key="rowIndex"
+          :class="{ 'row-selected': selectedRow === rowIndex }"
+          @click="selectedRow = rowIndex"
+        >
           <td
             v-for="col in internalColumns"
             :key="col.key"
@@ -70,7 +75,8 @@ const props = defineProps({
   skeletonRows: { type: Number, default: 10 },
   stickyHeader: { type: Boolean, default: true },
 })
-
+// define model select row
+const selectedRow = defineModel('selectedRow', { default: -1 })
 // -------------------------------------------------------
 // Căn lề theo type
 // -------------------------------------------------------
@@ -123,7 +129,7 @@ function formatCell(col, row) {
 
   switch (type) {
     case 'number':
-      return formatNumber(value)
+      return formatNumber(value, col.decimal)
     case 'date':
       return formatDate(value)
     case 'datetime':
@@ -134,10 +140,24 @@ function formatCell(col, row) {
 }
 
 // 999.999,99
-function formatNumber(value) {
-  return Number(value).toLocaleString('de-DE', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+function formatNumber(value, decimal) {
+  const num = Number(value)
+
+  // Nếu col có khai báo decimal tường minh → dùng luôn
+  if (decimal !== undefined) {
+    return num.toLocaleString('de-DE', {
+      minimumFractionDigits: decimal,
+      maximumFractionDigits: decimal,
+    })
+  }
+
+  // Tự detect: nếu có phần thập phân thực sự (1.5, 1.00 từ server) thì giữ 2 số
+  // Nếu là số nguyên (10000, 5) thì không hiện dấu phẩy
+  const isFloat = !Number.isInteger(num)
+
+  return num.toLocaleString('de-DE', {
+    minimumFractionDigits: isFloat ? 2 : 0,
+    maximumFractionDigits: isFloat ? 2 : 0,
   })
 }
 
@@ -296,5 +316,15 @@ td {
   height: 100%;
   cursor: col-resize;
   user-select: none;
+}
+/*
+  hover
+*/
+tr:hover td {
+  background: #f2f9ff !important;
+}
+
+tr.row-selected td {
+  background: #e5f3ff !important;
 }
 </style>

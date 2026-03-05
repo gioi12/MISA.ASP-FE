@@ -69,13 +69,13 @@ const handleChange = (e) => {
 
 /* Khi checked */
 .ms-checkbox-checked {
-  background-color: var(--primary--color);
+  background-color: white;
   border-color: var(--primary--color);
 }
 
 /* Check icon */
 .ms-checkbox--check {
-  color: white;
+  color: var(--primary--color);
   font-size: 12px;
   transform: scale(0);
   transition: 0.2s;

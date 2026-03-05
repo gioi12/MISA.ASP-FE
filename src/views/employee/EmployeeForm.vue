@@ -165,6 +165,7 @@
                       <ms-input
                         type="number"
                         :min="0"
+                        :max="100"
                         :step="0.01"
                         :decimal="2"
                         v-model="localEmployee.salaryCoefficient"
@@ -199,6 +200,7 @@
                         :spin="'number-spin'"
                         type="number"
                         :min="0"
+                        :max="100"
                         :step="1"
                         v-model="localEmployee.numberOfDependents"
                       />
@@ -305,7 +307,7 @@ import { generateNextCode } from '@/utils/codeGeneration'
 import { mapOption } from '@/utils/mappingHelper'
 import { employeeBankcolumns } from '@/constants/employeeConstants'
 import { bank } from '@/models/bank'
-import { watch, ref, toRaw, reactive } from 'vue'
+import { watch, ref, toRaw, reactive, onMounted, onBeforeUnmount } from 'vue'
 const { error } = useToast()
 const props = defineProps({
   open: {
@@ -456,6 +458,28 @@ async function validate() {
 
   return true
 }
+
+function handleKeydown(e) {
+  const ctrl = e.ctrlKey
+  const shift = e.shiftKey
+
+  switch (true) {
+    case ctrl && shift && e.key === 'S':
+      e.preventDefault()
+      handleStoreAndAdd()
+      break
+    case ctrl && e.key === 's':
+      e.preventDefault()
+      handleStore()
+      break
+    case e.key === 'Escape':
+      handleClose()
+      break
+  }
+}
+
+onMounted(() => document.addEventListener('keydown', handleKeydown))
+onBeforeUnmount(() => document.removeEventListener('keydown', handleKeydown))
 </script>
 <style scoped>
 .layout__personal-info {

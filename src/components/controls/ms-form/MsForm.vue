@@ -21,8 +21,8 @@
             </div>
           </div>
           <div class="form__header-close">
-            <div class="ask__icon cursor-pointer"></div>
-            <div class="close__icon cursor-pointer" @click="handleClose"></div>
+            <div class="ask__icon cursor-pointer" title="Giúp (F1)"></div>
+            <div class="close__icon cursor-pointer" @click="handleClose" title="Đóng (Esc)"></div>
           </div>
         </header>
         <div class="form__content--header">
@@ -50,12 +50,14 @@
                     <button
                       class="ms-button ms-button-secondary ms-button-size-default ms-button-radius-false"
                       @click="handleStore"
+                      title="Cất (Ctrl + S)"
                     >
                       Cất
                     </button>
                     <button
                       class="ms-button ms-button-primary ms-button-size-default ms-button-radius-false"
                       @click="handleStoreAndAdd"
+                      title="Cất và Thêm (Ctrl + Shift + S)"
                     >
                       Cất và thêm
                     </button>
@@ -314,6 +316,12 @@ onUnmounted(() => {
   top: 0;
   left: auto;
   width: auto;
+}
+.footer__container {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 1;
 }
 
 /* kết thúc css form cho settings */

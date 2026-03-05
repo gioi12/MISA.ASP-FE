@@ -25,23 +25,27 @@
           <div class="personal-info">
             <div class="flex row-input">
               <div class="w-2/5 p-r-6">
-                <ms-editer label="Mã" :required="true" :error="errors.employeeCode">
-                  <ms-input v-model="defaultCode" />
+                <ms-editer label="Mã" :required="true" :is-error="errors.employeeCode">
+                  <ms-input v-model="defaultCode" @input="delete errors.employeeCode" />
                 </ms-editer>
               </div>
               <div class="w-3/5">
-                <ms-editer label="Tên" :required="true" :error="errors.employeeName">
-                  <ms-input v-model="localEmployee.employeeName" />
+                <ms-editer label="Tên" :required="true" :is-error="errors.employeeName">
+                  <ms-input
+                    v-model="localEmployee.employeeName"
+                    @input="delete errors.employeeName"
+                  />
                 </ms-editer>
               </div>
             </div>
             <div class="row-input">
-              <ms-editer label="Đơn vị" :required="true" :error="errors.departmentId">
+              <ms-editer label="Đơn vị" :required="true" :is-error="errors.departmentId">
                 <ms-combo-box
                   :options="mapOption(masterData?.departments?.data || [], 'department')"
                   mode="combo"
                   :header-titles="{ code: 'Mã đơn vị', name: 'Tên đơn vị' }"
                   v-model="localEmployee.departmentId"
+                  @update:modelValue="delete errors.departmentId"
                 />
               </ms-editer>
             </div>
@@ -119,6 +123,7 @@
                       :header-titles="{ code: 'Mã Tài khoản', name: 'Tên Tài khoản' }"
                       mode="combo"
                       v-model="localEmployee.receivableAccountId"
+                      display-by="code"
                     />
                   </ms-editer>
                 </div>
@@ -136,6 +141,7 @@
                       :header-titles="{ code: 'Mã Tài khoản', name: 'Tên Tài khoản' }"
                       mode="combo"
                       v-model="localEmployee.payableAccountId"
+                      display-by="code"
                     />
                   </ms-editer>
                 </div>
@@ -203,7 +209,11 @@
             </template>
 
             <template #bank>
-              <ms-table :columns="employeeBankcolumns" :data="localEmployee.banks">
+              <ms-table
+                :columns="employeeBankcolumns"
+                :data="localEmployee.banks"
+                :sticky-header="false"
+              >
                 <template #bankCode="{ row }">
                   <ms-input v-model="row.bankCode" />
                 </template>
@@ -262,8 +272,8 @@
                     </ms-editer>
                   </div>
                   <div class="w-1/4 p-r-12">
-                    <ms-editer label="Email" :error="errors.email">
-                      <ms-input v-model="localEmployee.email" />
+                    <ms-editer label="Email" :is-error="errors.email">
+                      <ms-input v-model="localEmployee.email" @input="delete errors.email" />
                     </ms-editer>
                   </div>
                 </div>
@@ -289,6 +299,7 @@ import MsTable from '@/components/controls/ms-table/MsTable.vue'
 import MsButton from '@/components/controls/ms-button/MsButton.vue'
 import codeCounterAPI from '@/apis/components/employee/codeCounterAPI'
 import employeeAPI from '@/apis/components/employee/employeeAPI'
+import { dialog } from '@/utils/useDialog'
 import { useToast } from '@/utils/useToast'
 import { generateNextCode } from '@/utils/codeGeneration'
 import { mapOption } from '@/utils/mappingHelper'
@@ -370,7 +381,7 @@ function handleClose() {
   emit('close')
 }
 async function handleStore() {
-  if (!validate()) return
+  if (!(await validate())) return
   const res = await employeeAPI.checkExist({
     code: defaultCode.value,
     employeeId: localEmployee.value.employeeId,
@@ -385,7 +396,7 @@ async function handleStore() {
   emit('close')
 }
 async function handleStoreAndAdd() {
-  if (!validate()) return
+  if (!(await validate())) return
   const res = await employeeAPI.checkExist({
     code: defaultCode.value,
     employeeId: localEmployee.value.employeeId,
@@ -417,7 +428,7 @@ function handleRemoveBank(index) {
 /**
  * validate
  */
-function validate() {
+async function validate() {
   // Xóa từng key thay vì gán lại object mới
   Object.keys(errors).forEach((key) => delete errors[key])
 
@@ -436,8 +447,14 @@ function validate() {
       errors.email = 'Email không đúng định dạng'
     }
   }
+  if (Object.keys(errors).length > 0) {
+    await dialog.error({
+      message: Object.values(errors).join(', '),
+    })
+    return false
+  }
 
-  return Object.keys(errors).length === 0
+  return true
 }
 </script>
 <style scoped>

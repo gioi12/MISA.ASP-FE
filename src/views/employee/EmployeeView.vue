@@ -428,8 +428,9 @@ function handleDuplicateData(employee) {
 }
 async function handleDelete(employee) {
   if (!employee) return
+
   const ok = await dialog.warning({
-    message: `Bạn có thực sự muốn xóa Nhân viên  <${employee.employeeCode}> không?`,
+    message: `Bạn có thực sự muốn xóa nhân viên  <${employee.employeeCode}> không?`,
   })
   if (!ok) return
 
@@ -520,14 +521,23 @@ async function handleStore() {
 }
 async function handleStoreAndAdd() {
   try {
-    const res = await employeeAPI.addEmployeeForm(employeeModel.value)
-    rows.value.unshift(res.data)
-    success(`Thêm mới nhân viên <${employeeModel.value.employeeCode}> thành công`)
-    if (rows.value.length > size.value) rows.value.pop()
+    if (employeeModel.value.employeeId) {
+      // Update
+      const res = await employeeAPI.updateEmployeeForm(employeeModel.value)
+      const index = rows.value.findIndex((r) => r.employeeId === res.data.employeeId)
+      if (index !== -1) rows.value[index] = res.data
+      success(`Cập nhật nhân viên <${res.data.employeeCode}> thành công`)
+    } else {
+      // Insert
+      const res = await employeeAPI.addEmployeeForm(employeeModel.value)
+      rows.value.unshift(res.data)
+      if (rows.value.length > size.value) rows.value.pop()
+      success(`Thêm mới nhân viên <${res.data.employeeCode}> thành công`)
+    }
 
-    // Reset model nhưng KHÔNG đóng form
+    // Reset về thêm mới, không đóng form
     employeeModel.value = employee()
-  } catch (error) {
+  } catch {
     error(`Lưu nhân viên <${employeeModel.value.employeeCode}> thất bại`)
   }
 }

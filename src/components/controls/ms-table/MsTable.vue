@@ -9,7 +9,7 @@
         <th
           v-for="(col, index) in internalColumns"
           :key="col.key"
-          :style="getStickyStyle(col, true)"
+          :style="{ ...(stickyHeader ? stickyHeaderStyle : {}), ...getStickyStyle(col, true) }"
         >
           <div class="th-content" :style="getAlignStyle(col)">
             <template v-if="col.type === 'custom'">
@@ -68,6 +68,7 @@ const props = defineProps({
   data: { type: Array, required: true },
   loading: { type: Boolean, default: false },
   skeletonRows: { type: Number, default: 10 },
+  stickyHeader: { type: Boolean, default: true },
 })
 
 // -------------------------------------------------------
@@ -173,6 +174,11 @@ function getStickyStyle(col, isHeader) {
   }
 }
 
+const stickyHeaderStyle = {
+  position: 'sticky',
+  top: '-1px',
+  zIndex: 10,
+}
 // -------------------------------------------------------
 // Resize
 // -------------------------------------------------------
@@ -250,9 +256,6 @@ th {
   border-bottom: 1px solid #c7c7c7;
   min-height: var(--grid-header-height);
   height: var(--grid-header-height);
-  position: sticky;
-  z-index: 10;
-  top: -1px;
   background-color: #eef1f5;
   vertical-align: middle;
 }

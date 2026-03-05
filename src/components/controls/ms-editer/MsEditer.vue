@@ -7,7 +7,7 @@
     </div>
 
     <!-- Control -->
-    <div class="ms-form-control-wrap">
+    <div class="ms-form-control-wrap" :class="{ 'ms-border-error': error || isError }">
       <slot />
     </div>
 
@@ -23,6 +23,7 @@ defineProps({
   label: String,
   required: Boolean,
   error: String,
+  isError: Boolean,
 })
 </script>
 
@@ -48,5 +49,8 @@ defineProps({
 .ms-form-error {
   font-size: 12px;
   color: red;
+}
+.ms-border-error {
+  border: 1px solid red !important;
 }
 </style>

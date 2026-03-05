@@ -42,11 +42,21 @@ const dialog = {
   alert(options) {
     return open({
       type: 'info',
-      buttons: [{ text: 'Đóng', class: 'ms-button--primary', value: true }],
+      buttons: [
+        { text: 'Đóng', class: 'ms-button--primary ms-button-dialog text-white', value: true },
+      ],
       ...options,
     })
   },
-
+  error(options) {
+    return open({
+      type: 'error',
+      buttons: [
+        { text: 'Đóng', class: 'ms-button--primary ms-button-dialog text-white', value: true },
+      ],
+      ...options,
+    })
+  },
   warning(options) {
     return open({
       type: 'warning',

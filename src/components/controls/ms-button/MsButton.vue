@@ -130,6 +130,7 @@ const props = defineProps({
 }
 .ms-button-dialog {
   padding: 8px 16px 8px 16px !important;
+  border-radius: 4px;
 }
 /* kết thúc css tùy chỉnh cho button */
 </style>

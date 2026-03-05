@@ -12,7 +12,10 @@
 
           <div class="ms-dialog__divider" />
 
-          <div class="ms-dialog__footer">
+          <div
+            class="ms-dialog__footer"
+            :class="{ 'ms-dialog__footer--center': state.buttons.length === 1 }"
+          >
             <ms-button
               v-for="btn in state.buttons"
               :key="btn.text"
@@ -121,7 +124,9 @@ const iconClass = computed(
   display: flex;
   gap: 8px;
 }
-
+.ms-dialog__footer--center {
+  justify-content: center;
+}
 /* Transitions */
 .fade-enter-active,
 .fade-leave-active {

@@ -81,6 +81,10 @@ const props = defineProps({
       name: 'Tên',
     }),
   },
+  displayBy: {
+    type: String,
+    default: 'label',
+  },
 })
 const model = defineModel()
 
@@ -126,16 +130,22 @@ function onFocus() {
 const filteredOptions = computed(() => {
   if (!searchText.value || props.isRead) return props.options
 
-  return props.options.filter((opt) =>
-    opt.label.toLowerCase().includes(searchText.value.toLowerCase()),
-  )
+  const search = searchText.value.toLowerCase()
+
+  return props.options.filter((opt) => {
+    // mode là combo và code thì tìm theo cả code và name
+    if (props.mode === 'combo' || props.displayBy === 'code') {
+      return opt.code?.toLowerCase().includes(search) || opt.label?.toLowerCase().includes(search)
+    }
+    return opt.label?.toLowerCase().includes(search)
+  })
 })
 
 /**
  * Chọn item
  */
 function selectItem(item) {
-  searchText.value = item.label
+  searchText.value = props.displayBy === 'code' ? item.code : item.label
   model.value = item.value
   isOpen.value = false
 }
@@ -148,7 +158,7 @@ watch(
   (val) => {
     const found = props.options.find((o) => o.value === val)
     if (found) {
-      searchText.value = found.label
+      searchText.value = props.displayBy === 'code' ? found.code : found.label
     } else {
       searchText.value = ''
     }
@@ -159,11 +169,13 @@ watch(
  * Khi selectedIndex thay đổi từ ngoài
  */
 watch(
-  [() => props.selectedIndex, () => props.options],
-  ([index, options]) => {
+  () => props.options,
+  (options) => {
+    if (model.value != null) return
+    const index = props.selectedIndex
     if (index >= 0 && index < options.length) {
       const item = options[index]
-      searchText.value = item.label
+      searchText.value = props.displayBy === 'code' ? item.code : item.label
       model.value = item.value
     }
   },

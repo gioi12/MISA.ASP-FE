@@ -299,6 +299,7 @@
     @close="handleCloseSettings"
     @store="onStoreCustomizer"
     :column-states="columnStates"
+    :default-states="defaultStates"
   />
 </template>
 <script setup>
@@ -328,7 +329,7 @@ import EmployeeSettings from './EmployeeSettings.vue'
 // khởi tạo toast
 const { error, success } = useToast()
 // Khởi tạo composable
-const { columnStates, visibleColumns, applyAndSave } = useColumnCustomizer(columns)
+const { columnStates, visibleColumns, applyAndSave, defaultStates } = useColumnCustomizer(columns)
 
 function onStoreCustomizer(newStates) {
   applyAndSave(newStates)
@@ -651,7 +652,7 @@ async function handleExportExcel() {
       ...filter.value,
     })
 
-    exportExcel(res.data.data, columns, 'danh_sach_nhan_vien.xlsx')
+    exportExcel(res.data.data, visibleColumns.value, 'danh_sach_nhan_vien.xlsx')
   } catch {
     error('Xuất Excel thất bại')
   }

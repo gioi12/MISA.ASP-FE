@@ -368,4 +368,9 @@
   width: 36px;
   height: 36px;
 }
+.misa__logo {
+  background: url('../image/icons.svg') no-repeat -1745px -881px;
+  width: 56px;
+  height: 56px;
+}
 /* kết thúc css cho icon */

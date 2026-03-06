@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 const STORAGE_KEY = 'employee-columns-config'
 
 export function useColumnCustomizer(rawColumns) {
+  /** Đọc config đã lưu từ localStorage, trả về null nếu chưa có hoặc lỗi */
   function loadConfig() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
@@ -12,19 +13,28 @@ export function useColumnCustomizer(rawColumns) {
       return null
     }
   }
-
+  // lưu vào localstorage
   function saveConfig(config) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
   }
 
   const savedConfig = loadConfig()
+  /** Các cột cố định, không cho phép tuỳ chỉnh (ẩn/hiện, kéo thả) */
   const PINNED_KEYS = ['checkbox', 'action']
+  /** Lọc ra các cột có thể tuỳ chỉnh (bỏ checkbox và action) */
   const customizableColumns = rawColumns.filter((col) => !PINNED_KEYS.includes(col.key))
-
+  /**
+   * State của từng cột: thứ tự, hiển thị, độ rộng, có khóa vị trí không
+   * Nếu có config lưu sẵn → merge với rawColumns để không mất cột mới thêm
+   * Nếu chưa có → khởi tạo mặc định từ rawColumns
+   */
   const columnStates = ref(
     (() => {
       if (savedConfig) {
+        // Build map từ config đã lưu để tra cứu nhanh theo key
         const savedMap = Object.fromEntries(savedConfig.map((c, i) => [c.key, { ...c, order: i }]))
+        // Merge: ưu tiên giá trị đã lưu, fallback về giá trị mặc định của rawColumns
+
         const merged = customizableColumns.map((col) => ({
           key: col.key,
           definition: col.title,
@@ -34,9 +44,11 @@ export function useColumnCustomizer(rawColumns) {
           width: savedMap[col.key]?.width ?? col.width ?? 150,
           isLock: savedMap[col.key]?.isLock ?? !!col.sticky,
         }))
+        // Sắp xếp theo thứ tự đã lưu
         merged.sort((a, b) => a.order - b.order)
         return merged
       }
+      // mặc định
       return customizableColumns.map((col, i) => ({
         key: col.key,
         definition: col.title,
@@ -48,7 +60,10 @@ export function useColumnCustomizer(rawColumns) {
       }))
     })(),
   )
-
+  /**
+   * Danh sách cột thực sự truyền vào ms-table
+   * = checkbox (trái) + các cột visible theo thứ tự + action (phải)
+   */
   const visibleColumns = computed(() => {
     const visibleStates = columnStates.value.filter((c) => c.visible)
 
@@ -71,7 +86,7 @@ export function useColumnCustomizer(rawColumns) {
     return [...pinnedLeft, ...middleCols, ...pinnedRight]
   })
 
-  // Lưu lại giá trị gốc 1 lần duy nhất khi khởi tạo
+  /** Snapshot trạng thái mặc định, lưu 1 lần khi khởi tạo, không thay đổi sau đó */
   const defaultStates = customizableColumns.map((col, i) => ({
     key: col.key,
     definition: col.title,

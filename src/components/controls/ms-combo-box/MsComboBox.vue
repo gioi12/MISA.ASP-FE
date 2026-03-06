@@ -117,6 +117,9 @@ function toggleDropdown() {
 function onInput() {
   calcDropdownPosition()
   isOpen.value = true
+  if (!searchText.value) {
+    model.value = null
+  }
 }
 
 // Thêm vào @focus input

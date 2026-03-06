@@ -186,14 +186,31 @@ function formatDatetime(value) {
 // -------------------------------------------------------
 function getStickyStyle(col, isHeader) {
   if (!col.sticky) return {}
+
+  // Tính offset = tổng width các cột cùng phía sticky đứng trước nó
+  let offset = 0
+
+  if (col.sticky === 'left') {
+    for (const c of internalColumns) {
+      if (c.key === col.key) break
+      if (c.sticky === 'left') offset += c.width
+    }
+  } else if (col.sticky === 'right') {
+    // Duyệt ngược
+    for (let i = internalColumns.length - 1; i >= 0; i--) {
+      const c = internalColumns[i]
+      if (c.key === col.key) break
+      if (c.sticky === 'right') offset += c.width
+    }
+  }
+
   return {
     position: 'sticky',
-    [col.sticky]: '-1px',
-    borderLeft: 'none',
+    [col.sticky]: `calc(${offset}px - 1px)`,
     zIndex: isHeader ? 20 : 2,
+    borderLeft: 'none',
   }
 }
-
 const stickyHeaderStyle = {
   position: 'sticky',
   top: '-1px',

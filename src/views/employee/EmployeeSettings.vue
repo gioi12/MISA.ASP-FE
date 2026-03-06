@@ -13,7 +13,7 @@
           icon="search__icon"
           iconColor="#cccccc"
           v-model="searchText"
-          style="width: 200px"
+          style="width: 200px; margin-left: 10px"
         />
         <span class="toggle-link" @click="toggleExtraColumns">
           Sửa tên cột và hiển thị độ rộng
@@ -34,7 +34,7 @@
           <!-- Cell drag + checkbox — căn center giống header -->
           <template #visible="{ row }">
             <div
-              style="display: flex; align-items: center; justify-content: center; gap: 8px"
+              class="flex-center"
               draggable="true"
               @dragstart="onDragStart(realIndex(row))"
               @dragover.prevent="onDragOver(realIndex(row))"
@@ -244,5 +244,15 @@ function handleStore() {
 }
 .mr-10 {
   margin-right: 10px;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+/* css th tỏng table */
+:deep(th) {
+  top: -10px !important ;
 }
 </style>

@@ -100,8 +100,21 @@
                     <div>Lọc</div>
                   </ms-button>
                 </template>
-                <div>
-                  <ms-filter-form @reset="handleResetFilter" @filter="handleApplyFilter">
+                <template #default="{ close }">
+                  <ms-filter-form
+                    @reset="
+                      () => {
+                        handleResetFilter()
+                        close()
+                      }
+                    "
+                    @filter="
+                      (val) => {
+                        handleApplyFilter(val)
+                        close()
+                      }
+                    "
+                  >
                     <div class="flex">
                       <div class="w-1/2 p-r-6">
                         <ms-editer label="Đơn vị" :required="true">
@@ -139,7 +152,7 @@
                       </div>
                     </div>
                   </ms-filter-form>
-                </div>
+                </template>
               </ms-button-dropdown>
             </div>
           </div>
@@ -459,6 +472,7 @@ async function handleDelete(employee) {
 
   employeeAPI.deleteMany([employee.employeeId])
   rows.value = rows.value.filter((r) => r.employeeId !== employee.employeeId)
+  total.value--
   success(`Xóa nhân viên <${employee.employeeCode}> thành công`)
 }
 
@@ -533,6 +547,7 @@ async function handleStore() {
       const res = await employeeAPI.addEmployeeForm(employeeModel.value)
       rows.value.unshift(res.data)
       if (rows.value.length > size.value) rows.value.pop()
+      total.value++
       success(`Thêm mới nhân viên <${res.data.employeeCode}> thành công`)
     }
 
@@ -555,6 +570,7 @@ async function handleStoreAndAdd() {
       const res = await employeeAPI.addEmployeeForm(employeeModel.value)
       rows.value.unshift(res.data)
       if (rows.value.length > size.value) rows.value.pop()
+      total.value++
       success(`Thêm mới nhân viên <${res.data.employeeCode}> thành công`)
     }
 
